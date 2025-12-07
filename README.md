@@ -250,7 +250,55 @@ The project tracks metrics directly related to rocket landing:
 
 ## Videos
 
-(Location of video demonstrations - to be added)
+**Demo Video**: [Link to be added]
+- Non-technical demonstration of the rocket landing agents
+- Shows successful landings and key features
+- Appropriate for general audience
+
+**Technical Walkthrough**: [Link to be added]
+- Code structure and architecture explanation
+- ML techniques and key contributions
+- Training process and evaluation methodology
+
+## Individual Contributions
+
+This project was completed individually. All components including environment design, agent implementations, training infrastructure, evaluation metrics, and documentation were developed as part of this final project.
+
+## Design Choices and Justifications
+
+### Custom Reward Function
+The custom reward wrapper (`environments/reward_wrapper.py`) was designed to explicitly balance three competing objectives:
+1. **Safety**: Large bonus for successful landings, large penalty for crashes
+2. **Fuel Efficiency**: Penalty proportional to engine usage
+3. **Smooth Control**: Penalty for large action changes
+
+This parameterized design allows systematic exploration of reward shaping effects, which is critical for understanding how different RL algorithms respond to reward design.
+
+### Multiple RL Paradigms
+We compare four different RL approaches to understand their relative strengths:
+- **Tabular Q-Learning**: Baseline for understanding basic RL concepts on a simple environment
+- **DQN**: Value-based deep RL with experience replay for sample efficiency
+- **REINFORCE**: Policy gradient method that directly optimizes policy
+- **A2C**: Actor-critic combines policy gradients with value function estimation
+
+This comparison demonstrates how different algorithmic choices affect learning dynamics and final performance.
+
+### Train/Validation/Test Split via Seeds
+RL environments are deterministic given a seed. We use different seed ranges for train/val/test sets to ensure:
+- Training on diverse initial conditions
+- Validation for hyperparameter tuning and early stopping
+- Test set for unbiased final evaluation
+
+This approach provides proper evaluation methodology while maintaining environment determinism.
+
+### Regularization Techniques
+We apply multiple regularization techniques to prevent overfitting:
+- **L2 Weight Decay**: Prevents weight explosion
+- **Dropout**: Reduces overfitting in value networks
+- **Early Stopping**: Prevents overfitting to training seeds
+- **Gradient Clipping**: Prevents exploding gradients during training
+
+These techniques are essential for stable deep RL training.
 
 ## Attribution
 

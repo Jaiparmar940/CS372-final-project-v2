@@ -459,7 +459,7 @@ class DQNAgent:
     
     def load(self, filepath: str):
         """Load agent from file."""
-        checkpoint = torch.load(filepath, map_location=self.device)
+        checkpoint = torch.load(filepath, map_location=self.device, weights_only=False)
         
         self.q_network.load_state_dict(checkpoint["q_network_state_dict"])
         self.target_network.load_state_dict(checkpoint["target_network_state_dict"])

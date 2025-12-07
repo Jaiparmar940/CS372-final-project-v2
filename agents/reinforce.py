@@ -406,7 +406,7 @@ class REINFORCEAgent:
     
     def load(self, filepath: str):
         """Load agent from file."""
-        checkpoint = torch.load(filepath, map_location=self.device)
+        checkpoint = torch.load(filepath, map_location=self.device, weights_only=False)
         
         self.policy_network.load_state_dict(checkpoint["policy_network_state_dict"])
         self.optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
