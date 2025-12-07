@@ -263,20 +263,51 @@ class A2CAgent:
         advantages_tensor = torch.FloatTensor(advantages).to(self.device)
         returns_tensor = torch.FloatTensor(returns).to(self.device)
         
-        # Normalize advantages
-        advantages_tensor = (advantages_tensor - advantages_tensor.mean()) / (advantages_tensor.std() + 1e-8)
+        # Normalize advantages (with numerical stability)
+        adv_mean = advantages_tensor.mean()
+        adv_std = advantages_tensor.std()
+        if adv_std > 1e-8:
+            advantages_tensor = (advantages_tensor - adv_mean) / (adv_std + 1e-8)
+        else:
+            advantages_tensor = advantages_tensor - adv_mean  # Just center if std is too small
+        
+        # Check for NaN in advantages
+        if torch.isnan(advantages_tensor).any():
+            advantages_tensor = torch.nan_to_num(advantages_tensor, nan=0.0)
         
         # Convert to tensors
         states_tensor = torch.FloatTensor(np.array(self.episode_states)).to(self.device)
         actions_tensor = torch.LongTensor(self.episode_actions).to(self.device)
         log_probs_tensor = torch.stack(self.episode_log_probs).to(self.device)
         entropies_tensor = torch.stack(self.episode_entropies).to(self.device)
-        values_tensor = torch.cat(self.episode_values).squeeze().to(self.device)
+        
+        # Check for NaN in log_probs
+        if torch.isnan(log_probs_tensor).any():
+            print("Warning: NaN detected in log_probs, replacing with zeros")
+            log_probs_tensor = torch.nan_to_num(log_probs_tensor, nan=0.0)
+        
+        # Recompute values with gradients (needed for value loss)
+        values_tensor = self.value_network(states_tensor)
+        
+        # Ensure proper shape (handle both [batch, 1] and [batch] cases)
+        if values_tensor.dim() > 1:
+            values_tensor = values_tensor.squeeze()
+        if values_tensor.dim() == 0:
+            values_tensor = values_tensor.unsqueeze(0)
+        
+        # Ensure values_tensor and returns_tensor have same shape
+        if values_tensor.shape != returns_tensor.shape:
+            values_tensor = values_tensor.view_as(returns_tensor)
+        
+        # Check for NaN in values
+        if torch.isnan(values_tensor).any():
+            print("Warning: NaN detected in values, replacing with zeros")
+            values_tensor = torch.nan_to_num(values_tensor, nan=0.0)
         
         # Compute policy loss (actor)
         policy_loss = -(log_probs_tensor * advantages_tensor).mean()
         
-        # Compute value loss (critic)
+        # Compute value loss (critic) - now values_tensor has gradients
         value_loss = nn.MSELoss()(values_tensor, returns_tensor)
         
         # Entropy regularization

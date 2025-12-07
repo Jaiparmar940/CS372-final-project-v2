@@ -31,8 +31,13 @@ def main():
     parser.add_argument("--seed", type=int, default=42, help="Random seed")
     parser.add_argument("--save_dir", type=str, default="checkpoints/reinforce", help="Checkpoint directory")
     parser.add_argument("--plot_dir", type=str, default="plots", help="Plot directory")
+    parser.add_argument("--agent_name", type=str, default=None, help="Custom agent name for logging (default: 'reinforce' or 'reinforce_sgd')")
     
     args = parser.parse_args()
+    
+    # Set agent name based on optimizer if not specified
+    if args.agent_name is None:
+        args.agent_name = "reinforce" if args.optimizer == "adam" else f"reinforce_{args.optimizer}"
     
     # Set seed
     set_seed(args.seed)
@@ -90,7 +95,7 @@ def main():
         agent,
         env_factory,
         config,
-        agent_name="reinforce",
+        agent_name=args.agent_name,
         algorithm_name="REINFORCE",
         environment_name=env_name_str,
         reward_config=reward_config,

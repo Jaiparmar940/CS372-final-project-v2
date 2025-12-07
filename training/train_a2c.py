@@ -33,8 +33,13 @@ def main():
     parser.add_argument("--seed", type=int, default=42, help="Random seed")
     parser.add_argument("--save_dir", type=str, default="checkpoints/a2c", help="Checkpoint directory")
     parser.add_argument("--plot_dir", type=str, default="plots", help="Plot directory")
+    parser.add_argument("--agent_name", type=str, default=None, help="Custom agent name for logging (default: 'a2c' or 'a2c_sgd')")
     
     args = parser.parse_args()
+    
+    # Set agent name based on optimizer if not specified
+    if args.agent_name is None:
+        args.agent_name = "a2c" if args.optimizer == "adam" else f"a2c_{args.optimizer}"
     
     # Set seed
     set_seed(args.seed)
@@ -97,7 +102,7 @@ def main():
         agent,
         env_factory,
         config,
-        agent_name="a2c",
+        agent_name=args.agent_name,
         algorithm_name="A2C",
         environment_name=env_name_str,
         reward_config=reward_config,

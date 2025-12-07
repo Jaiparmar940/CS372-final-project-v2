@@ -97,12 +97,21 @@ class ValueNetwork(nn.Module):
             x = layer(x)
             x = self.activation(x)
             
+            # Check for NaN and replace with zeros
+            if torch.isnan(x).any():
+                x = torch.nan_to_num(x, nan=0.0)
+            
             # Apply dropout if enabled
             if self.use_dropout:
                 x = F.dropout(x, p=self.dropout_rate, training=self.training)
         
         # Output layer: scalar value
         value = self.layers[-1](x)
+        
+        # Check for NaN in output and clamp
+        if torch.isnan(value).any():
+            value = torch.nan_to_num(value, nan=0.0)
+        value = torch.clamp(value, min=-100.0, max=100.0)
         
         return value
 

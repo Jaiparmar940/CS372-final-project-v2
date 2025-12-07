@@ -100,12 +100,20 @@ class DQNNetwork(nn.Module):
             x = layer(x)
             x = self.activation(x)
             
+            # Check for NaN and replace with zeros
+            if torch.isnan(x).any():
+                x = torch.nan_to_num(x, nan=0.0)
+            
             # Apply dropout if enabled
             if self.use_dropout:
                 x = F.dropout(x, p=self.dropout_rate, training=self.training)
         
         # Output layer (no activation, raw Q-values)
         q_values = self.layers[-1](x)
+        
+        # Check for NaN in output
+        if torch.isnan(q_values).any():
+            q_values = torch.nan_to_num(q_values, nan=0.0)
         
         return q_values
     

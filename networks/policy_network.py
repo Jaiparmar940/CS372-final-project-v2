@@ -93,9 +93,19 @@ class PolicyNetwork(nn.Module):
         for layer in self.layers[:-1]:
             x = layer(x)
             x = self.activation(x)
+            # Check for NaN and replace with zeros
+            if torch.isnan(x).any():
+                x = torch.nan_to_num(x, nan=0.0)
         
         # Output layer: action logits
         logits = self.layers[-1](x)
+        
+        # Check for NaN in logits and clamp to prevent NaN
+        if torch.isnan(logits).any():
+            logits = torch.nan_to_num(logits, nan=0.0)
+        
+        # Clamp logits to prevent extreme values that could cause NaN
+        logits = torch.clamp(logits, min=-10.0, max=10.0)
         
         # Create categorical distribution
         dist = torch.distributions.Categorical(logits=logits)
