@@ -321,20 +321,23 @@ def train_agent(
         
         # Console logging (every log_frequency episodes or last 50)
         if (episode + 1) % config.log_frequency == 0 or episode >= config.num_episodes - 50:
+            epsilon_str = f"{current_epsilon:.4f}" if current_epsilon is not None else "N/A"
+            lr_str = f"{current_lr:.6f}" if current_lr is not None else "N/A"
+            
             if val_return is not None:
                 print(f"Episode {episode + 1:5d}/{config.num_episodes} | "
                       f"Return: {episode_return:8.2f} | "
                       f"Length: {episode_length:4d} | "
-                      f"Epsilon: {current_epsilon:.4f if current_epsilon is not None else 'N/A':>8} | "
-                      f"LR: {current_lr:.6f if current_lr is not None else 'N/A':>10} | "
+                      f"Epsilon: {epsilon_str:>8} | "
+                      f"LR: {lr_str:>10} | "
                       f"Val: {val_return:8.2f} | "
                       f"Best: {best_val_return:8.2f} (ep {best_episode})")
             else:
                 print(f"Episode {episode + 1:5d}/{config.num_episodes} | "
                       f"Return: {episode_return:8.2f} | "
                       f"Length: {episode_length:4d} | "
-                      f"Epsilon: {current_epsilon:.4f if current_epsilon is not None else 'N/A':>8} | "
-                      f"LR: {current_lr:.6f if current_lr is not None else 'N/A':>10}")
+                      f"Epsilon: {epsilon_str:>8} | "
+                      f"LR: {lr_str:>10}")
         
         # Periodic checkpointing
         if (episode + 1) % config.save_frequency == 0:
@@ -365,10 +368,11 @@ def train_agent(
     print(f"{'Episode':<10} {'Return':<12} {'Length':<10} {'Epsilon':<12} {'LR':<12} {'Val Return':<12}")
     print("-"*80)
     for ep in recent_episodes[-50:]:
+        epsilon_str = f"{ep['epsilon']:.4f}" if ep['epsilon'] is not None else "N/A"
+        lr_str = f"{ep['lr']:.6f}" if ep['lr'] is not None else "N/A"
+        val_str = f"{ep['val_return']:.2f}" if ep['val_return'] is not None else "N/A"
         print(f"{ep['episode']:<10} {ep['return']:<12.2f} {ep['length']:<10} "
-              f"{ep['epsilon']:.4f if ep['epsilon'] is not None else 'N/A':<12} "
-              f"{ep['lr']:.6f if ep['lr'] is not None else 'N/A':<12} "
-              f"{ep['val_return']:.2f if ep['val_return'] is not None else 'N/A':<12}")
+              f"{epsilon_str:<12} {lr_str:<12} {val_str:<12}")
     print("="*80)
     print(f"\nTraining log saved to: {csv_path}")
     print()
@@ -453,7 +457,7 @@ def create_env_factory(
     Create environment factory function.
     
     Args:
-        env_name: Name of environment (e.g., "LunarLander-v2" or "ToyRocket")
+        env_name: Name of environment (e.g., "LunarLander-v3" or "ToyRocket")
         reward_config: Reward configuration for wrapper
         use_wrapper: Whether to use reward wrapper (for LunarLander)
         

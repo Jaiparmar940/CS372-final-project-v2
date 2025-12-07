@@ -11,7 +11,7 @@ This project implements and compares multiple reinforcement learning algorithms 
 - **REINFORCE**: Policy gradient method using Monte Carlo returns
 - **Actor-Critic (A2C)**: Advantage Actor-Critic with separate policy and value networks
 
-All deep RL agents are trained on Gymnasium's LunarLander-v2 environment, which simulates rocket landing with continuous state space and discrete actions.
+All deep RL agents are trained on Gymnasium's LunarLander-v3 environment, which simulates rocket landing with continuous state space and discrete actions.
 
 ## Why Rocket Landing?
 
@@ -28,9 +28,12 @@ These objectives often conflict, making it an ideal testbed for comparing differ
 
 See [SETUP.md](SETUP.md) for detailed installation instructions.
 
+**Quick install:**
 ```bash
 pip install -r requirements.txt
 ```
+
+**Note**: LunarLander-v3 requires Box2D. If installation fails, see [INSTALL_BOX2D.md](INSTALL_BOX2D.md) for troubleshooting.
 
 ### Training Agents
 
@@ -106,6 +109,23 @@ The project includes comprehensive diagnostics for monitoring training health:
 5. **Evaluation Script**: Evaluate trained agents on test seeds
 
 See [DIAGNOSTICS.md](DIAGNOSTICS.md) for detailed usage.
+
+### Visual Testing
+
+Test trained agents visually in the LunarLander environment:
+
+```bash
+# Test DQN agent with visual rendering
+python scripts/test_visual.py --algorithm dqn --checkpoint checkpoints/dqn/dqn_best.pt --num_episodes 5
+
+# Test with slower rendering (easier to see)
+python scripts/test_visual.py --algorithm dqn --checkpoint checkpoints/dqn/dqn_best.pt --num_episodes 5 --delay 0.05
+
+# Test without reward wrapper
+python scripts/test_visual.py --algorithm dqn --checkpoint checkpoints/dqn/dqn_best.pt --num_episodes 5 --no_wrapper
+```
+
+This will open a window showing the rocket landing attempts in real-time.
 
 ## Project Structure
 

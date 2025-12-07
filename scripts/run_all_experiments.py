@@ -43,7 +43,7 @@ def main():
         return env
     
     def lunar_lander_factory(seed):
-        env = gym.make("LunarLander-v2")
+        env = gym.make("LunarLander-v3")
         env = RocketRewardWrapper(env, reward_config)
         set_seed(seed)
         return env

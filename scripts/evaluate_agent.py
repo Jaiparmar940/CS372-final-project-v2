@@ -57,7 +57,7 @@ def load_agent(algorithm: str, checkpoint_path: str):
             device=device
         )
         agent.load(checkpoint_path)
-        return agent, "LunarLander-v2"
+        return agent, "LunarLander-v3"
     
     elif algorithm == "reinforce":
         agent = REINFORCEAgent(
@@ -68,7 +68,7 @@ def load_agent(algorithm: str, checkpoint_path: str):
             device=device
         )
         agent.load(checkpoint_path)
-        return agent, "LunarLander-v2"
+        return agent, "LunarLander-v3"
     
     elif algorithm == "a2c":
         agent = A2CAgent(
@@ -79,7 +79,7 @@ def load_agent(algorithm: str, checkpoint_path: str):
             device=device
         )
         agent.load(checkpoint_path)
-        return agent, "LunarLander-v2"
+        return agent, "LunarLander-v3"
     
     else:
         raise ValueError(f"Unknown algorithm: {algorithm}")

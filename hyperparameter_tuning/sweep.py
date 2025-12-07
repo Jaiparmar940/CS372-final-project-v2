@@ -230,7 +230,7 @@ def hyperparameter_sweep_reward(
     import gymnasium as gym
     
     def env_factory_with_reward(seed, reward_config):
-        env = gym.make("LunarLander-v2")
+        env = gym.make("LunarLander-v3")
         env = RocketRewardWrapper(env, reward_config)
         return env
     

@@ -14,7 +14,7 @@ This document credits external resources, libraries, and tools used in this proj
 - **Purpose**: Standard RL environment API
 - **License**: MIT License
 - **Website**: https://gymnasium.farama.org/
-- **Usage**: LunarLander-v2 environment
+- **Usage**: LunarLander-v3 environment
 - **Note**: Gymnasium is the maintained fork of OpenAI Gym
 
 ### NumPy
@@ -55,10 +55,11 @@ This document credits external resources, libraries, and tools used in this proj
 
 ## Environment
 
-### LunarLander-v2
+### LunarLander-v3
 - **Source**: Gymnasium (Farama Foundation)
 - **Description**: Continuous state space, discrete action space rocket landing simulation
 - **Usage**: Main environment for deep RL agents
+- **Note**: Requires Box2D dependencies (included in requirements.txt)
 
 ## AI Tools and Assistance
 

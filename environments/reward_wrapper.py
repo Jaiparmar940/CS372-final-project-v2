@@ -1,5 +1,5 @@
 """
-Custom reward wrapper for LunarLander-v2 environment.
+Custom reward wrapper for LunarLander-v3 environment.
 Implements parameterized reward function that trades off landing success,
 fuel usage, and smoothness of control.
 """
@@ -13,7 +13,7 @@ from utils.config import RewardConfig
 
 class RocketRewardWrapper(Wrapper):
     """
-    Wrapper that modifies LunarLander-v2 rewards to emphasize:
+    Wrapper that modifies LunarLander-v3 rewards to emphasize:
     - Safe landings
     - Fuel efficiency
     - Smooth control
@@ -31,7 +31,7 @@ class RocketRewardWrapper(Wrapper):
         Initialize reward wrapper.
         
         Args:
-            env: Gymnasium environment (LunarLander-v2)
+            env: Gymnasium environment (LunarLander-v3)
             reward_config: Configuration for reward parameters
             track_fuel: Whether to track fuel consumption
         """

@@ -4,4 +4,7 @@ numpy>=1.24.0
 matplotlib>=3.7.0
 pandas>=2.0.0
 pyyaml>=6.0
+# Box2D dependencies for LunarLander (requires SWIG binary via Homebrew on macOS)
+box2d-py>=2.3.8
+pygame>=2.0.0
 

@@ -1,5 +1,5 @@
 """
-Training script for A2C agent on LunarLander-v2.
+Training script for A2C agent on LunarLander-v3.
 """
 
 import argparse
@@ -40,7 +40,7 @@ def main():
     set_seed(args.seed)
     
     # Create environment to get dimensions
-    env = gym.make("LunarLander-v2")
+    env = gym.make("LunarLander-v3")
     state_dim = env.observation_space.shape[0]
     action_dim = env.action_space.n
     
@@ -86,13 +86,13 @@ def main():
     
     # Create environment factory with reward wrapper
     def env_factory(seed):
-        env = gym.make("LunarLander-v2")
+        env = gym.make("LunarLander-v3")
         env = RocketRewardWrapper(env, reward_config)
         set_seed(seed)
         return env
     
     # Train agent
-    env_name_str = "LunarLander-v2 (with RocketRewardWrapper)" if reward_config else "LunarLander-v2"
+    env_name_str = "LunarLander-v3 (with RocketRewardWrapper)" if reward_config else "LunarLander-v3"
     train_stats = train_agent(
         agent,
         env_factory,

@@ -102,7 +102,7 @@ elif torch.backends.mps.is_available():
 else:
     print("Using CPU")
 
-env = gym.make("LunarLander-v2")
+env = gym.make("LunarLander-v3")
 print("Environment created successfully!")
 print("State space:", env.observation_space)
 print("Action space:", env.action_space)
@@ -110,15 +110,56 @@ print("Action space:", env.action_space)
 
 ## Environment Configuration
 
-### LunarLander-v2 Environment
+### LunarLander-v3 Environment
 
-The project uses Gymnasium's LunarLander-v2 environment, which is automatically installed with gymnasium. No additional setup is required.
+The project uses Gymnasium's LunarLander-v3 environment, which requires Box2D.
+
+**Installation:**
+
+1. **Install SWIG** (required for Box2D):
+   
+   **On macOS (use Homebrew, NOT pip):**
+   ```bash
+   brew install swig
+   ```
+   
+   **On Linux:**
+   ```bash
+   sudo apt-get install swig
+   # or
+   pip install swig
+   ```
+
+2. **Install Box2D Python bindings:**
+   ```bash
+   pip install box2d-py
+   ```
+
+3. **Install pygame (required for rendering):**
+   ```bash
+   pip install pygame
+   ```
+   
+   Or install all at once:
+   ```bash
+   pip install box2d-py pygame
+   ```
+
+3. **Verify installation:**
+   ```bash
+   python -c "import gymnasium as gym; env = gym.make('LunarLander-v3'); print('Success!'); env.close()"
+   ```
+
+**Note**: If Box2D installation fails, you may need to:
+- Install Xcode command line tools: `xcode-select --install`
+- Use a different Python version or virtual environment
+- Install Box2D system library via Homebrew first
 
 ### Custom Environments
 
 The project includes:
 - **Toy Rocket Environment**: A simple discrete grid-based environment (no additional dependencies)
-- **Reward Wrapper**: Custom wrapper for LunarLander-v2 (no additional dependencies)
+- **Reward Wrapper**: Custom wrapper for LunarLander-v3
 
 ## Directory Structure
 
@@ -151,7 +192,7 @@ These directories are created automatically when you run training scripts.
 
 3. **Environment Not Found**:
    - Make sure gymnasium is installed: `pip install gymnasium`
-   - Try: `python -c "import gymnasium as gym; gym.make('LunarLander-v2')"`
+   - Try: `python -c "import gymnasium as gym; gym.make('LunarLander-v3')"`
 
 4. **Plotting Issues**:
    - Make sure matplotlib is installed: `pip install matplotlib`

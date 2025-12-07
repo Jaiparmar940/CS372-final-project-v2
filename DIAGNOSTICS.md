@@ -18,7 +18,7 @@ At the start of each training run, a clear CONFIG SUMMARY block is printed showi
 CONFIG SUMMARY
 ================================================================================
 Algorithm: DQN
-Environment: LunarLander-v2 (with RocketRewardWrapper)
+Environment: LunarLander-v3 (with RocketRewardWrapper)
 Agent Name: dqn
 
 Training Configuration:
@@ -117,6 +117,33 @@ All training runs will:
 2. Log every episode to CSV
 3. Display last 50 episodes at end
 4. Save checkpoints
+
+### Visual Testing
+
+Test trained agents visually in the LunarLander environment:
+
+```bash
+# Test DQN agent with visual rendering
+python scripts/test_visual.py --algorithm dqn --checkpoint checkpoints/dqn/dqn_best.pt --num_episodes 5
+
+# Test with slower rendering (easier to see)
+python scripts/test_visual.py --algorithm dqn --checkpoint checkpoints/dqn/dqn_best.pt --num_episodes 5 --delay 0.05
+
+# Test without reward wrapper
+python scripts/test_visual.py --algorithm dqn --checkpoint checkpoints/dqn/dqn_best.pt --num_episodes 5 --no_wrapper
+
+# Test REINFORCE agent
+python scripts/test_visual.py --algorithm reinforce --checkpoint checkpoints/reinforce/reinforce_best.pt --num_episodes 5
+
+# Test A2C agent
+python scripts/test_visual.py --algorithm a2c --checkpoint checkpoints/a2c/a2c_best.pt --num_episodes 5
+```
+
+This will open a window showing the rocket landing attempts in real-time with:
+- Visual rendering of the rocket and landing pad
+- Real-time episode statistics
+- Success/crash indicators
+- Fuel usage tracking
 
 ### Analyzing Results
 
