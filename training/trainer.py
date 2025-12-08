@@ -487,15 +487,15 @@ def create_env_factory(
         Function that creates environment given seed
     """
     # Assume Gymnasium environment
-        import gymnasium as gym
-        from environments.reward_wrapper import RocketRewardWrapper
-        
-        def factory(seed: int):
-            env = gym.make(env_name)
-            if use_wrapper and reward_config is not None:
-                env = RocketRewardWrapper(env, reward_config)
-            set_seed(int(seed))  # Ensure seed is Python int
-            return env
-        
-        return factory
+    import gymnasium as gym
+    from environments.reward_wrapper import RocketRewardWrapper
+    
+    def factory(seed: int):
+        env = gym.make(env_name)
+        if use_wrapper and reward_config is not None:
+            env = RocketRewardWrapper(env, reward_config)
+        set_seed(int(seed))  # Ensure seed is Python int
+        return env
+    
+    return factory
 
