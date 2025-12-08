@@ -19,17 +19,21 @@ from utils.device import get_device
 
 def main():
     parser = argparse.ArgumentParser(description="Train A2C agent")
-    parser.add_argument("--episodes", type=int, default=1000, help="Number of training episodes")
-    parser.add_argument("--lr", type=float, default=1e-3, help="Learning rate")
+    parser.add_argument("--episodes", type=int, default=2000, help="Number of training episodes")
+    parser.add_argument("--lr", type=float, default=7e-4, help="Learning rate (slightly higher for faster improvement)")
     parser.add_argument("--gamma", type=float, default=0.99, help="Discount factor")
-    parser.add_argument("--entropy_coef", type=float, default=0.01, help="Entropy regularization coefficient")
+    parser.add_argument("--entropy_coef", type=float, default=0.005, help="Entropy regularization coefficient (lower to reduce exploration once learning)")
     parser.add_argument("--value_coef", type=float, default=0.5, help="Value loss coefficient")
-    parser.add_argument("--n_steps", type=int, default=5, help="Number of steps before update")
+    parser.add_argument("--n_steps", type=int, default=10, help="Number of steps before update (shorter for faster updates, longer for better estimates)")
     parser.add_argument("--optimizer", type=str, default="adam", choices=["adam", "rmsprop", "sgd"], help="Optimizer")
-    parser.add_argument("--weight_decay", type=float, default=0.0, help="L2 weight decay")
+    parser.add_argument("--weight_decay", type=float, default=1e-5, help="L2 weight decay (small amount for regularization)")
     parser.add_argument("--dropout", type=float, default=0.0, help="Dropout rate for value network")
-    parser.add_argument("--gradient_clip", type=float, default=10.0, help="Gradient clipping threshold")
-    parser.add_argument("--use_scheduler", action="store_true", help="Use learning rate scheduler")
+    parser.add_argument("--gradient_clip", type=float, default=0.5, help="Gradient clipping threshold (tighter for stability)")
+    parser.add_argument("--hidden_size", type=int, default=128, help="Hidden layer size (smaller = faster, default: 128)")
+    parser.add_argument("--val_frequency", type=int, default=20, help="Validation frequency in episodes (higher = faster, default: 20)")
+    parser.add_argument("--val_episodes_per_seed", type=int, default=1, help="Validation episodes per seed (1 = fastest, default: 1)")
+    parser.add_argument("--use_scheduler", action="store_true", help="Use learning rate scheduler (disabled by default to avoid over-decay)")
+    parser.add_argument("--no_scheduler", action="store_false", dest="use_scheduler", help="Disable learning rate scheduler")
     parser.add_argument("--seed", type=int, default=42, help="Random seed")
     parser.add_argument("--save_dir", type=str, default="checkpoints/a2c", help="Checkpoint directory")
     parser.add_argument("--plot_dir", type=str, default="plots", help="Plot directory")
@@ -49,14 +53,14 @@ def main():
     state_dim = env.observation_space.shape[0]
     action_dim = env.action_space.n
     
-    # Network configuration
+    # Network configuration (configurable size for speed/performance tradeoff)
     network_config = NetworkConfig(
-        hidden_sizes=[128, 128],
+        hidden_sizes=[args.hidden_size, args.hidden_size],
         dropout_rate=args.dropout,
         use_dropout=args.dropout > 0.0
     )
     
-    # Optimizer configuration
+    # Optimizer configuration (scheduler enabled by default for better convergence)
     optimizer_config = OptimizerConfig(
         optimizer=args.optimizer,
         learning_rate=args.lr,
@@ -86,8 +90,11 @@ def main():
         num_episodes=args.episodes,
         train_seeds=list(range(42, 52)),
         val_seeds=list(range(100, 110)),
-        test_seeds=list(range(200, 210))
+        test_seeds=list(range(200, 210)),
+        log_frequency=args.val_frequency  # Use validation frequency for logging too
     )
+    # Add custom attribute for validation episodes per seed
+    config.val_episodes_per_seed = args.val_episodes_per_seed
     
     # Create environment factory with reward wrapper
     def env_factory(seed):

@@ -266,8 +266,10 @@ def train_agent(
         # Validation evaluation
         val_return = None
         if (episode + 1) % config.log_frequency == 0:
+            # Use configurable validation episodes per seed (default 1 for speed)
+            val_episodes = getattr(config, 'val_episodes_per_seed', 1)
             val_metrics = evaluate_on_seeds(
-                agent, env_factory, config.val_seeds, num_episodes_per_seed=1
+                agent, env_factory, config.val_seeds, num_episodes_per_seed=val_episodes
             )
             val_return = val_metrics["mean_return"]
             val_returns.append(val_return)
@@ -418,20 +420,20 @@ def evaluate_on_seeds(
     for seed in seeds:
         env = env_factory(seed)
         
-        for _ in range(num_episodes_per_seed):
-            metrics = agent.evaluate(env, num_episodes=1, seed=seed)
-            all_returns.append(metrics["mean_return"])
-            all_lengths.append(metrics["mean_length"])
-            
-            if metrics.get("success_rate", 0) > 0:
-                success_count += 1
-            if metrics.get("crash_rate", 0) > 0:
-                crash_count += 1
-            
-            if "mean_fuel_usage" in metrics:
-                fuel_usage.append(metrics["mean_fuel_usage"])
-            
-            total_episodes += 1
+        # Evaluate multiple episodes per seed for more stable validation
+        # Pass None as seed to let evaluate() handle randomization internally
+        metrics = agent.evaluate(env, num_episodes=num_episodes_per_seed, seed=None)
+        all_returns.append(metrics["mean_return"])
+        all_lengths.append(metrics["mean_length"])
+        
+        # success_rate and crash_rate are already rates (0-1), so multiply by episodes
+        success_count += int(metrics.get("success_rate", 0) * num_episodes_per_seed)
+        crash_count += int(metrics.get("crash_rate", 0) * num_episodes_per_seed)
+        
+        if "mean_fuel_usage" in metrics:
+            fuel_usage.append(metrics["mean_fuel_usage"])
+        
+        total_episodes += num_episodes_per_seed
     
     results = {
         "mean_return": np.mean(all_returns),

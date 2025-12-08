@@ -158,12 +158,13 @@ class A2CAgent:
         else:
             return None
     
-    def select_action(self, state: np.ndarray) -> Tuple[int, torch.Tensor, torch.Tensor, torch.Tensor]:
+    def select_action(self, state: np.ndarray, deterministic: bool = False) -> Tuple[int, torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Select action from policy and estimate value.
         
         Args:
             state: Current state
+            deterministic: If True, take argmax action (for evaluation)
             
         Returns:
             action: Selected action
@@ -174,15 +175,18 @@ class A2CAgent:
         state_tensor = torch.FloatTensor(state).unsqueeze(0).to(self.device)
         
         # Get action from policy
-        action, log_prob = self.policy_network.get_action(state_tensor)
+        dist = self.policy_network.forward(state_tensor)
+        if deterministic:
+            action = torch.argmax(dist.probs).item()
+            log_prob = dist.log_prob(torch.tensor(action, device=self.device))
+        else:
+            action = dist.sample()
+            log_prob = dist.log_prob(action)
+            action = action.item()
         
-        # Get entropy
+        # Get entropy and value estimate (both don't need gradients during action selection)
         with torch.no_grad():
-            dist = self.policy_network.forward(state_tensor)
             entropy = dist.entropy()
-        
-        # Get value estimate
-        with torch.no_grad():
             value = self.value_network(state_tensor)
         
         return action, log_prob, entropy, value
@@ -210,38 +214,29 @@ class A2CAgent:
     
     def compute_advantages(self, next_value: float = 0.0) -> Tuple[List[float], List[float]]:
         """
-        Compute advantages and returns using n-step returns.
+        Compute advantages and returns using a bootstrap from next_value.
         
         Args:
-            next_value: Value of next state (for bootstrapping)
+            next_value: Value of next state (for bootstrapping after the rollout)
             
         Returns:
             advantages: List of advantages
             returns: List of returns
         """
-        advantages = []
-        returns = []
+        rewards = torch.FloatTensor(self.episode_rewards).to(self.device)
+        dones = torch.FloatTensor(self.episode_dones).to(self.device)
         
-        # Compute n-step returns
-        for t in range(len(self.episode_rewards)):
-            # Compute n-step return
-            G = 0
-            for k in range(t, min(t + self.n_steps, len(self.episode_rewards))):
-                G += (self.gamma ** (k - t)) * self.episode_rewards[k]
-                if self.episode_dones[k]:
-                    break
-            
-            # Bootstrap if not terminal
-            if t + self.n_steps < len(self.episode_rewards) and not self.episode_dones[t + self.n_steps - 1]:
-                G += (self.gamma ** self.n_steps) * next_value
-            
-            returns.append(G)
-            
-            # Compute advantage: A = G - V(s)
-            advantage = G - self.episode_values[t].item()
-            advantages.append(advantage)
+        returns_tensor = torch.zeros_like(rewards).to(self.device)
+        running_return = torch.tensor(next_value).to(self.device)
         
-        return advantages, returns
+        # Compute discounted returns backward so each step bootstraps correctly
+        for t in reversed(range(len(rewards))):
+            running_return = rewards[t] + self.gamma * running_return * (1 - dones[t])
+            returns_tensor[t] = running_return
+        
+        advantages_tensor = returns_tensor - torch.stack(self.episode_values).squeeze().to(self.device)
+        
+        return advantages_tensor.tolist(), returns_tensor.tolist()
     
     def update(self, next_value: float = 0.0) -> Tuple[float, float, float]:
         """
@@ -278,8 +273,12 @@ class A2CAgent:
         # Convert to tensors
         states_tensor = torch.FloatTensor(np.array(self.episode_states)).to(self.device)
         actions_tensor = torch.LongTensor(self.episode_actions).to(self.device)
-        log_probs_tensor = torch.stack(self.episode_log_probs).to(self.device)
-        entropies_tensor = torch.stack(self.episode_entropies).to(self.device)
+        
+        # CRITICAL: Recompute log_probs with gradients enabled using CURRENT policy state
+        # The stored log_probs are from action selection and may be detached
+        dist = self.policy_network.forward(states_tensor)
+        log_probs_tensor = dist.log_prob(actions_tensor)
+        entropies_tensor = dist.entropy()
         
         # Check for NaN in log_probs
         if torch.isnan(log_probs_tensor).any():
@@ -304,7 +303,7 @@ class A2CAgent:
             print("Warning: NaN detected in values, replacing with zeros")
             values_tensor = torch.nan_to_num(values_tensor, nan=0.0)
         
-        # Compute policy loss (actor)
+        # Compute policy loss (actor) - use recomputed log_probs with gradients
         policy_loss = -(log_probs_tensor * advantages_tensor).mean()
         
         # Compute value loss (critic) - now values_tensor has gradients
@@ -320,15 +319,25 @@ class A2CAgent:
         # Update policy network
         self.policy_optimizer.zero_grad()
         total_policy_loss.backward()
+        
+        # Check gradient norm before clipping (for debugging)
+        policy_grad_norm_before = torch.nn.utils.clip_grad_norm_(self.policy_network.parameters(), float('inf'))
         if self.gradient_clip > 0:
-            torch.nn.utils.clip_grad_norm_(self.policy_network.parameters(), self.gradient_clip)
+            policy_grad_norm_after = torch.nn.utils.clip_grad_norm_(self.policy_network.parameters(), self.gradient_clip)
+        else:
+            policy_grad_norm_after = policy_grad_norm_before
         self.policy_optimizer.step()
         
         # Update value network
         self.value_optimizer.zero_grad()
         total_value_loss.backward()
+        
+        # Check gradient norm before clipping (for debugging)
+        value_grad_norm_before = torch.nn.utils.clip_grad_norm_(self.value_network.parameters(), float('inf'))
         if self.gradient_clip > 0:
-            torch.nn.utils.clip_grad_norm_(self.value_network.parameters(), self.gradient_clip)
+            value_grad_norm_after = torch.nn.utils.clip_grad_norm_(self.value_network.parameters(), self.gradient_clip)
+        else:
+            value_grad_norm_after = value_grad_norm_before
         self.value_optimizer.step()
         
         # Update learning rate schedulers
@@ -340,6 +349,12 @@ class A2CAgent:
         policy_loss_value = policy_loss.item()
         value_loss_value = value_loss.item()
         entropy_loss_value = entropy_loss.item()
+        
+        # Debug: Print gradient norms for first few updates to verify learning
+        if len(self.policy_losses) < 3:
+            print(f"Update {len(self.policy_losses)+1}: Policy grad norm: {policy_grad_norm_before:.4f} -> {policy_grad_norm_after:.4f}, "
+                  f"Value grad norm: {value_grad_norm_before:.4f} -> {value_grad_norm_after:.4f}, "
+                  f"Policy loss: {policy_loss_value:.4f}, Value loss: {value_loss_value:.4f}")
         
         self.policy_losses.append(policy_loss_value)
         self.value_losses.append(value_loss_value)
@@ -405,7 +420,7 @@ class A2CAgent:
                 self.update(next_value)
             
             if terminated or truncated:
-                # Final update with remaining steps
+                # Final update with remaining steps (use next_value=0 for terminal state)
                 if len(self.episode_states) > 0:
                     self.update(0.0)
                 break
@@ -447,7 +462,7 @@ class A2CAgent:
             episode_info = {}
             
             while steps < 1000:  # Max steps
-                action, _, _, _ = self.select_action(state)
+                action, _, _, _ = self.select_action(state, deterministic=True)
                 next_state, reward, terminated, truncated, step_info = env.step(action)
                 
                 total_reward += reward

@@ -159,11 +159,11 @@ def test_visual(
         episode_info = {}
         
         while steps < 1000:  # Max steps
-            # Select action (no exploration in eval mode)
+            # Select action (no exploration in eval mode - use deterministic)
             if algorithm == "dqn":
                 action = agent.select_action(state, training=False)
             elif algorithm in ["reinforce", "a2c"]:
-                action, _, _, _ = agent.select_action(state)
+                action, _, _, _ = agent.select_action(state, deterministic=True)
             
             # Take step
             next_state, reward, terminated, truncated, step_info = env.step(action)
