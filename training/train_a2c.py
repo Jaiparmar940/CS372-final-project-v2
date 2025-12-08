@@ -19,7 +19,7 @@ from utils.device import get_device
 
 def main():
     parser = argparse.ArgumentParser(description="Train A2C agent")
-    parser.add_argument("--episodes", type=int, default=1000, help="Number of training episodes")
+    parser.add_argument("--episodes", type=int, default=10000, help="Number of training episodes")
     parser.add_argument("--lr", type=float, default=1e-3, help="Learning rate")
     parser.add_argument("--gamma", type=float, default=0.99, help="Discount factor")
     parser.add_argument("--entropy_coef", type=float, default=0.01, help="Entropy regularization coefficient")

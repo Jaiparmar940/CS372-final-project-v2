@@ -63,9 +63,32 @@ pip install box2d-py
 
 ## Windows Installation
 
+### Method 1: Using Windows Package Manager (winget) - Recommended
+
+```powershell
+# Step 1: Install SWIG using Windows Package Manager
+winget install --id SWIG.SWIG -e
+
+# Step 2: Refresh PATH in current session (or restart terminal)
+$env:Path += ";C:\Users\$env:USERNAME\AppData\Local\Microsoft\WinGet\Packages\SWIG.SWIG_Microsoft.Winget.Source_8wekyb3d8bbwe\swigwin-4.4.0"
+
+# Step 3: Verify SWIG is accessible
+swig -version
+
+# Step 4: Install Box2D Python bindings
+pip install box2d-py
+
+# Step 5: Install pygame (required for rendering)
+pip install pygame
+```
+
+**Note**: After installing SWIG via winget, you may need to restart your terminal or manually add SWIG to your PATH for the current session. The PATH will be automatically updated for new terminal sessions.
+
+### Method 2: Manual Installation
+
 ```bash
 # Install SWIG from https://www.swig.org/download.html
-# Add SWIG to PATH
+# Download swigwin-4.x.x.zip, extract it, and add to PATH
 
 # Then install
 pip install box2d-py
@@ -91,8 +114,10 @@ python -c "import gymnasium as gym; env = gym.make('LunarLander-v3'); print('Suc
 - Check that you're using the same Python interpreter where you installed Box2D
 
 ### "Command 'swig' failed"
-- Install SWIG: `pip install swig` or `brew install swig` (macOS)
-- Make sure SWIG is in your PATH
+- **Windows**: Install SWIG using `winget install --id SWIG.SWIG -e` (recommended) or download manually from https://www.swig.org/download.html
+- **macOS**: Install SWIG via Homebrew: `brew install swig` (NOT pip - the pip package is just a wrapper)
+- **Linux**: Install via package manager: `sudo apt-get install swig`
+- Make sure SWIG is in your PATH. On Windows, you may need to restart your terminal after installation.
 
 ## Alternative: Use Pre-trained Models
 

@@ -18,7 +18,7 @@ from utils.plotting import plot_learning_curve
 
 def main():
     parser = argparse.ArgumentParser(description="Train tabular Q-learning agent")
-    parser.add_argument("--episodes", type=int, default=1000, help="Number of training episodes")
+    parser.add_argument("--episodes", type=int, default=10000, help="Number of training episodes")
     parser.add_argument("--lr", type=float, default=0.1, help="Learning rate")
     parser.add_argument("--gamma", type=float, default=0.99, help="Discount factor")
     parser.add_argument("--epsilon_start", type=float, default=1.0, help="Initial epsilon")

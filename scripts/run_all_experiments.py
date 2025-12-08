@@ -3,6 +3,7 @@ Run all training experiments for comparison.
 Trains all agents and generates comparison plots.
 """
 
+import argparse
 import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -21,13 +22,19 @@ from utils.device import get_device
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Run all training experiments for comparison")
+    parser.add_argument("--episodes", type=int, default=500, help="Number of training episodes (default: 500)")
+    args = parser.parse_args()
+    
     print("="*80)
     print("Rocket Lander RL - Running All Experiments")
+    print("="*80)
+    print(f"Training with {args.episodes} episodes per agent")
     print("="*80)
     
     # Training configuration
     config = TrainingConfig(
-        num_episodes=500,  # Reduced for faster demo
+        num_episodes=args.episodes,
         train_seeds=list(range(42, 52)),
         val_seeds=list(range(100, 110)),
         test_seeds=list(range(200, 210))
