@@ -6,12 +6,10 @@ A comprehensive reinforcement learning project comparing different RL paradigms 
 
 This project implements and compares multiple reinforcement learning algorithms on rocket landing tasks:
 
-- **Tabular Q-Learning**: Basic Q-learning on a simple discrete toy environment
 - **Deep Q-Network (DQN)**: Value-based deep RL with experience replay and target networks
-- **REINFORCE**: Policy gradient method using Monte Carlo returns
 - **Actor-Critic (A2C)**: Advantage Actor-Critic with separate policy and value networks
 
-All deep RL agents are trained on Gymnasium's LunarLander-v3 environment, which simulates rocket landing with continuous state space and discrete actions.
+All agents are trained on Gymnasium's LunarLander-v3 environment, which simulates rocket landing with continuous state space and discrete actions.
 
 ## Why Rocket Landing?
 
@@ -39,12 +37,6 @@ pip install -r requirements.txt
 
 **Note**: All scripts should be run from the project root directory. The scripts automatically handle Python path setup.
 
-#### Tabular Q-Learning (Toy Environment)
-
-```bash
-python training/train_tabular.py --episodes 1000
-```
-
 #### DQN
 
 ```bash
@@ -53,12 +45,6 @@ python training/train_dqn.py --episodes 1000 --optimizer adam
 
 # With RMSprop optimizer
 python training/train_dqn.py --episodes 1000 --optimizer rmsprop
-```
-
-#### REINFORCE
-
-```bash
-python training/train_reinforce.py --episodes 1000 --optimizer adam
 ```
 
 #### A2C
@@ -132,12 +118,9 @@ This will open a window showing the rocket landing attempts in real-time.
 ```
 cs372final/
 ├── environments/          # RL environments
-│   ├── toy_rocket.py      # Simple discrete tabular environment
 │   └── reward_wrapper.py  # Custom reward function wrapper
 ├── agents/                # RL agents
-│   ├── tabular_q_learning.py
 │   ├── dqn.py
-│   ├── reinforce.py
 │   └── a2c.py
 ├── networks/              # Neural network architectures
 │   ├── dqn_network.py
@@ -145,9 +128,7 @@ cs372final/
 │   └── value_network.py
 ├── training/              # Training scripts and utilities
 │   ├── trainer.py
-│   ├── train_tabular.py
 │   ├── train_dqn.py
-│   ├── train_reinforce.py
 │   └── train_a2c.py
 ├── evaluation/           # Evaluation utilities
 │   ├── evaluator.py
@@ -165,23 +146,16 @@ cs372final/
 
 ## Key Features
 
-### 1. Tabular Q-Learning
-- **Location**: `agents/tabular_q_learning.py`
-- Epsilon-greedy exploration with decay
-- Q-table updates using Bellman equation
-- Clear convergence on toy environment
-
-### 2. DQN Components
+### 1. DQN Components
 - **Replay Buffer**: `agents/dqn.py` (ExperienceReplay class)
 - **Target Network**: `agents/dqn.py` (periodic updates)
 - **Custom Architecture**: `networks/dqn_network.py`
 - Experience replay, target network, gradient clipping
 
-### 3. Policy Methods
-- **REINFORCE**: `agents/reinforce.py` - Monte Carlo policy gradient
-- **A2C**: `agents/a2c.py` - Separate policy and value networks
+### 2. Policy Methods
+- **A2C**: `agents/a2c.py` - Actor-Critic with separate policy and value networks
 
-### 4. Custom Reward Function
+### 3. Custom Reward Function
 - **Location**: `environments/reward_wrapper.py`
 - Parameterized reward with coefficients for:
   - Landing success bonus
@@ -242,9 +216,8 @@ The project tracks metrics directly related to rocket landing:
 
 (To be filled in after running experiments)
 
-- Tabular Q-learning shows clear convergence on toy environment
 - DQN with experience replay and target network achieves stable learning
-- Policy gradient methods (REINFORCE, A2C) provide alternative approach
+- Actor-Critic (A2C) provides policy gradient approach with value function estimation
 - Custom reward function balances safety and fuel efficiency
 - Optimizer choice (Adam vs RMSprop) affects convergence speed
 
@@ -275,10 +248,8 @@ The custom reward wrapper (`environments/reward_wrapper.py`) was designed to exp
 This parameterized design allows systematic exploration of reward shaping effects, which is critical for understanding how different RL algorithms respond to reward design.
 
 ### Multiple RL Paradigms
-We compare four different RL approaches to understand their relative strengths:
-- **Tabular Q-Learning**: Baseline for understanding basic RL concepts on a simple environment
+We compare two different RL approaches to understand their relative strengths:
 - **DQN**: Value-based deep RL with experience replay for sample efficiency
-- **REINFORCE**: Policy gradient method that directly optimizes policy
 - **A2C**: Actor-critic combines policy gradients with value function estimation
 
 This comparison demonstrates how different algorithmic choices affect learning dynamics and final performance.

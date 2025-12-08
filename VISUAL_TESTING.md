@@ -23,8 +23,6 @@ Before visual testing, you need a trained agent:
 # Train DQN
 python training/train_dqn.py --episodes 1000 --optimizer adam
 
-# Or train REINFORCE
-python training/train_reinforce.py --episodes 1000 --optimizer adam
 
 # Or train A2C
 python training/train_a2c.py --episodes 1000 --optimizer adam
@@ -47,7 +45,7 @@ python scripts/test_visual.py --algorithm dqn --checkpoint checkpoints/dqn/dqn_b
 
 ## Options
 
-- `--algorithm`: Algorithm name (`dqn`, `reinforce`, or `a2c`)
+- `--algorithm`: Algorithm name (`dqn` or `a2c`)
 - `--checkpoint`: Path to checkpoint file (usually `*_best.pt`)
 - `--num_episodes`: Number of episodes to run (default: 5)
 - `--render_mode`: Rendering mode (`human`, `rgb_array`, or `none`)

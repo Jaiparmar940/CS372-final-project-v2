@@ -238,6 +238,10 @@ def train_agent(
     best_episode = 0
     recent_episodes = []  # Store last 50 episodes for console output
     
+    # For robust model selection: track moving average of validation returns
+    val_return_window = []  # Store recent validation returns for moving average
+    window_size = 5  # Use average of last 5 validation checks for model selection
+    
     for episode in range(config.num_episodes):
         # Train on random training seed
         train_seed = int(np.random.choice(config.train_seeds))
@@ -266,11 +270,17 @@ def train_agent(
         # Validation evaluation
         val_return = None
         if (episode + 1) % config.log_frequency == 0:
+            # Use more episodes per seed to reduce noise in validation metrics
             val_metrics = evaluate_on_seeds(
-                agent, env_factory, config.val_seeds, num_episodes_per_seed=1
+                agent, env_factory, config.val_seeds, num_episodes_per_seed=5
             )
             val_return = val_metrics["mean_return"]
             val_returns.append(val_return)
+            
+            # Track validation returns for moving average
+            val_return_window.append(val_return)
+            if len(val_return_window) > window_size:
+                val_return_window.pop(0)
             
             # Update learning rate scheduler if available
             if hasattr(agent, 'update_scheduler'):
@@ -288,13 +298,25 @@ def train_agent(
                     print(f"Early stopping at episode {episode + 1}")
                     break
             
-            # Save best model
-            if val_return > best_val_return:
-                best_val_return = val_return
-                best_episode = episode + 1
-                checkpoint_path = os.path.join(save_dir, f"{agent_name}_best.pt")
-                if hasattr(agent, 'save'):
-                    agent.save(checkpoint_path)
+            # Save best model using moving average for more robust selection
+            # Only update if we have enough validation checks for a meaningful average
+            if len(val_return_window) >= window_size:
+                avg_val_return = np.mean(val_return_window)
+                # Use moving average for model selection to reduce noise
+                if avg_val_return > best_val_return:
+                    best_val_return = avg_val_return
+                    best_episode = episode + 1
+                    checkpoint_path = os.path.join(save_dir, f"{agent_name}_best.pt")
+                    if hasattr(agent, 'save'):
+                        agent.save(checkpoint_path)
+            else:
+                # For early episodes, use single validation return
+                if val_return > best_val_return:
+                    best_val_return = val_return
+                    best_episode = episode + 1
+                    checkpoint_path = os.path.join(save_dir, f"{agent_name}_best.pt")
+                    if hasattr(agent, 'save'):
+                        agent.save(checkpoint_path)
         
         # Log to CSV (every episode)
         csv_writer.writerow([
@@ -457,24 +479,14 @@ def create_env_factory(
     Create environment factory function.
     
     Args:
-        env_name: Name of environment (e.g., "LunarLander-v3" or "ToyRocket")
+        env_name: Name of environment (e.g., "LunarLander-v3")
         reward_config: Reward configuration for wrapper
         use_wrapper: Whether to use reward wrapper (for LunarLander)
         
     Returns:
         Function that creates environment given seed
     """
-    if env_name == "ToyRocket":
-        from environments.toy_rocket import ToyRocketEnv
-        
-        def factory(seed: int):
-            env = ToyRocketEnv()
-            set_seed(int(seed))  # Ensure seed is Python int
-            return env
-        
-        return factory
-    
-    else:  # Assume Gymnasium environment
+    # Assume Gymnasium environment
         import gymnasium as gym
         from environments.reward_wrapper import RocketRewardWrapper
         

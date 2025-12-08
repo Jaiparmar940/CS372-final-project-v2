@@ -9,7 +9,6 @@ This checklist ensures all rubric requirements are met for maximum points.
 **Reinforcement Learning (All 7 items - 45 points):**
 - ✅ checkbox43: Used Gymnasium (3 pts)
 - ✅ checkbox44: Demonstrated convergence (3 pts)
-- ✅ checkbox45: Tabular Q-learning (5 pts)
 - ✅ checkbox46: DQN with experience replay and target networks (7 pts)
 - ✅ checkbox47: Custom reward function (7 pts)
 - ✅ checkbox48: Policy gradient method (10 pts)
@@ -44,7 +43,7 @@ This checklist ensures all rubric requirements are met for maximum points.
 7. checkbox5: Hyperparameter tuning (5 pts)
 8. checkbox4: Regularization (5 pts)
 9. checkbox64: Architecture comparison (5 pts)
-10. checkbox45: Tabular Q-learning (5 pts)
+10. checkbox67: Ablation study (5 pts)
 11. checkbox67: Ablation study (5 pts) - **NEW**
 12. checkbox0: Train/val/test split (3 pts)
 13. checkbox1: Training curves (3 pts)

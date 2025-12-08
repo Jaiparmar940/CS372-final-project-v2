@@ -1,5 +1,5 @@
 """
-Policy network for policy gradient methods (REINFORCE, A2C).
+Policy network for policy gradient methods (A2C).
 Outputs action probabilities over discrete action space.
 """
 
@@ -14,7 +14,7 @@ class PolicyNetwork(nn.Module):
     """
     Policy network that outputs action probabilities.
     
-    Used for REINFORCE and as the actor in A2C.
+    Used as the actor in A2C.
     """
     
     def __init__(

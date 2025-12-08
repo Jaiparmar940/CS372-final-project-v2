@@ -22,45 +22,21 @@ def load_agent(algorithm: str, checkpoint_path: str):
     Load agent from checkpoint.
     
     Args:
-        algorithm: Algorithm name ("tabular_q", "dqn", "reinforce", "a2c")
+        algorithm: Algorithm name ("dqn", "a2c")
         checkpoint_path: Path to checkpoint file
         
     Returns:
         Loaded agent
     """
-    from agents.tabular_q_learning import TabularQLearning
     from agents.dqn import DQNAgent
-    from agents.reinforce import REINFORCEAgent
     from agents.a2c import A2CAgent
     from utils.device import get_device
     from utils.config import NetworkConfig, OptimizerConfig
     
     device = get_device()
     
-    if algorithm == "tabular_q":
-        # For tabular Q, we need to know state/action space sizes
-        from environments.toy_rocket import ToyRocketEnv
-        env = ToyRocketEnv()
-        agent = TabularQLearning(
-            state_space_size=env.get_state_space_size(),
-            action_space_size=env.action_space.n
-        )
-        agent.load(checkpoint_path)
-        return agent, "ToyRocket"
-    
-    elif algorithm == "dqn":
+    if algorithm == "dqn":
         agent = DQNAgent(
-            state_dim=8,
-            action_dim=4,
-            network_config=NetworkConfig(),
-            optimizer_config=OptimizerConfig(),
-            device=device
-        )
-        agent.load(checkpoint_path)
-        return agent, "LunarLander-v3"
-    
-    elif algorithm == "reinforce":
-        agent = REINFORCEAgent(
             state_dim=8,
             action_dim=4,
             network_config=NetworkConfig(),
@@ -88,7 +64,7 @@ def load_agent(algorithm: str, checkpoint_path: str):
 def main():
     parser = argparse.ArgumentParser(description="Evaluate trained agent")
     parser.add_argument("--algorithm", type=str, required=True,
-                       choices=["tabular_q", "dqn", "reinforce", "a2c"],
+                       choices=["dqn", "a2c"],
                        help="Algorithm name")
     parser.add_argument("--checkpoint", type=str, required=True,
                        help="Path to checkpoint file")
@@ -127,16 +103,13 @@ def main():
     print()
     
     # Create environment factory
-    if env_name == "ToyRocket":
-        env_factory = create_env_factory("ToyRocket")
-    else:
-        reward_config = RewardConfig() if args.use_reward_wrapper else None
-        def env_factory(seed):
-            env = gym.make(env_name)
-            if args.use_reward_wrapper and reward_config:
-                env = RocketRewardWrapper(env, reward_config)
-            set_seed(int(seed))
-            return env
+    reward_config = RewardConfig() if args.use_reward_wrapper else None
+    def env_factory(seed):
+        env = gym.make(env_name)
+        if args.use_reward_wrapper and reward_config:
+            env = RocketRewardWrapper(env, reward_config)
+        set_seed(int(seed))
+        return env
     
     # Evaluate
     print("Running evaluation...")

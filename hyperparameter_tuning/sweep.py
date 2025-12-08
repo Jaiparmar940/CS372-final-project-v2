@@ -153,7 +153,7 @@ def hyperparameter_sweep_policy(
     env_factory: Callable,
     train_config: TrainingConfig,
     val_seeds: List[int],
-    agent_type: str = "reinforce",  # "reinforce" or "a2c"
+    agent_type: str = "a2c",  # "a2c"
     results_dir: str = "hyperparameter_results"
 ):
     """
@@ -163,10 +163,9 @@ def hyperparameter_sweep_policy(
         env_factory: Function that creates environment
         train_config: Training configuration
         val_seeds: Validation seeds
-        agent_type: Type of agent ("reinforce" or "a2c")
+        agent_type: Type of agent ("a2c")
         results_dir: Directory to save results
     """
-    from agents.reinforce import REINFORCEAgent
     from agents.a2c import A2CAgent
     from utils.device import get_device
     
@@ -188,9 +187,7 @@ def hyperparameter_sweep_policy(
         }
         defaults.update(kwargs)
         
-        if agent_type == "reinforce":
-            return REINFORCEAgent(**defaults)
-        else:
+        if agent_type == "a2c":
             defaults["value_coef"] = kwargs.get("value_coef", 0.5)
             return A2CAgent(**defaults)
     

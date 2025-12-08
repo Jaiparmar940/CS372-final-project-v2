@@ -9,10 +9,9 @@ This document analyzes the project against the CS372 final project rubric to ens
 #### Reinforcement Learning Section (Strong Coverage)
 - ✅ **checkbox43**: Used Gymnasium (3 pts) - `environments/reward_wrapper.py`, all training scripts
 - ✅ **checkbox44**: Demonstrated convergence through learning curves (3 pts) - `utils/plotting.py`, all agents log episode returns
-- ✅ **checkbox45**: Tabular Q-learning with epsilon-greedy (5 pts) - `agents/tabular_q_learning.py`
 - ✅ **checkbox46**: DQN with experience replay and target networks (7 pts) - `agents/dqn.py`
-- ✅ **checkbox47**: Custom reward function or custom environment (7 pts) - `environments/reward_wrapper.py`, `environments/toy_rocket.py`
-- ✅ **checkbox48**: Policy gradient method (REINFORCE, A2C) (10 pts) - `agents/reinforce.py`, `agents/a2c.py`
+- ✅ **checkbox47**: Custom reward function (7 pts) - `environments/reward_wrapper.py`
+- ✅ **checkbox48**: Policy gradient method (A2C) (10 pts) - `agents/a2c.py`
 - ✅ **checkbox49**: Actor-critic architecture (10 pts) - `agents/a2c.py` with separate policy and value networks
 
 #### Core ML Fundamentals
@@ -22,7 +21,7 @@ This document analyzes the project against the CS372 final project rubric to ens
 - ✅ **checkbox5**: Hyperparameter tuning (5 pts) - `hyperparameter_tuning/sweep.py` with grid search
 
 #### Model Training & Optimization
-- ✅ **checkbox11**: Learning rate scheduling (3 pts) - `utils/config.py`, `agents/dqn.py`, `agents/reinforce.py`, `agents/a2c.py` (StepLR, ReduceLROnPlateau)
+- ✅ **checkbox11**: Learning rate scheduling (3 pts) - `utils/config.py`, `agents/dqn.py`, `agents/a2c.py` (StepLR, ReduceLROnPlateau)
 - ✅ **checkbox13**: GPU/CUDA acceleration (3 pts) - `utils/device.py` with CUDA/MPS support
 - ✅ **checkbox14**: Gradient clipping (3 pts) - All agent training loops
 - ✅ **checkbox15**: Custom neural network architecture (5 pts) - `networks/dqn_network.py`, `networks/policy_network.py`, `networks/value_network.py`
@@ -30,7 +29,7 @@ This document analyzes the project against the CS372 final project rubric to ens
 
 #### Model Evaluation & Analysis
 - ✅ **checkbox62**: At least three distinct evaluation metrics (3 pts) - Return, success rate, fuel usage, crash rate, episode length
-- ✅ **checkbox64**: Compared multiple model architectures (5 pts) - `evaluation/compare_agents.py` compares DQN, REINFORCE, A2C
+- ✅ **checkbox64**: Compared multiple model architectures (5 pts) - `evaluation/compare_agents.py` compares DQN and A2C
 
 ### Recommended Selection (15 items = 70 points)
 
@@ -46,7 +45,7 @@ This document analyzes the project against the CS372 final project rubric to ens
 7. checkbox5: Hyperparameter tuning (5 pts)
 8. checkbox4: Regularization (5 pts)
 9. checkbox64: Compared multiple model architectures (5 pts)
-10. checkbox45: Tabular Q-learning (5 pts)
+10. checkbox67: Ablation study (5 pts)
 
 **Lower-Value Items (Fill remaining):**
 11. checkbox0: Train/validation/test split (3 pts)

@@ -23,27 +23,19 @@ def load_agent(algorithm: str, checkpoint_path: str):
     Load agent from checkpoint.
     
     Args:
-        algorithm: Algorithm name ("tabular_q", "dqn", "reinforce", "a2c")
+        algorithm: Algorithm name ("dqn", "a2c")
         checkpoint_path: Path to checkpoint file
         
     Returns:
         Loaded agent
     """
-    from agents.tabular_q_learning import TabularQLearning
     from agents.dqn import DQNAgent
-    from agents.reinforce import REINFORCEAgent
     from agents.a2c import A2CAgent
     from utils.config import NetworkConfig, OptimizerConfig
     
     device = get_device()
     
-    if algorithm == "tabular_q":
-        # Tabular Q-learning is for toy environment, not LunarLander
-        print("Note: Tabular Q-learning is for the toy environment, not LunarLander.")
-        print("Use --algorithm dqn, reinforce, or a2c for LunarLander.")
-        return None, None
-    
-    elif algorithm == "dqn":
+    if algorithm == "dqn":
         agent = DQNAgent(
             state_dim=8,
             action_dim=4,
@@ -54,17 +46,6 @@ def load_agent(algorithm: str, checkpoint_path: str):
         agent.load(checkpoint_path)
         # Use v2 (may show deprecation warning but should still work)
         # Note: v3 requires Box2D which may not be installed
-        return agent, "LunarLander-v3"
-    
-    elif algorithm == "reinforce":
-        agent = REINFORCEAgent(
-            state_dim=8,
-            action_dim=4,
-            network_config=NetworkConfig(),
-            optimizer_config=OptimizerConfig(),
-            device=device
-        )
-        agent.load(checkpoint_path)
         return agent, "LunarLander-v3"
     
     elif algorithm == "a2c":
@@ -162,7 +143,7 @@ def test_visual(
             # Select action (no exploration in eval mode)
             if algorithm == "dqn":
                 action = agent.select_action(state, training=False)
-            elif algorithm in ["reinforce", "a2c"]:
+            elif algorithm == "a2c":
                 action, _, _, _ = agent.select_action(state)
             
             # Take step
@@ -221,7 +202,7 @@ def test_visual(
 def main():
     parser = argparse.ArgumentParser(description="Test agent visually in LunarLander")
     parser.add_argument("--algorithm", type=str, required=True,
-                       choices=["dqn", "reinforce", "a2c"],
+                       choices=["dqn", "a2c"],
                        help="Algorithm name")
     parser.add_argument("--checkpoint", type=str, required=True,
                        help="Path to checkpoint file")

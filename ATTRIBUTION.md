@@ -8,7 +8,7 @@ This document credits external resources, libraries, and tools used in this proj
 - **Purpose**: Deep learning framework for neural networks
 - **License**: BSD-style license
 - **Website**: https://pytorch.org/
-- **Usage**: All neural network implementations (DQN, REINFORCE, A2C)
+- **Usage**: All neural network implementations (DQN, A2C)
 
 ### Gymnasium
 - **Purpose**: Standard RL environment API
@@ -39,15 +39,11 @@ This document credits external resources, libraries, and tools used in this proj
 
 ### Q-Learning
 - **Reference**: Watkins, C. J. C. H., & Dayan, P. (1992). Q-learning. Machine learning, 8(3-4), 279-292.
-- **Implementation**: Custom implementation in `agents/tabular_q_learning.py`
+- **Implementation**: Deep Q-Network (DQN) implementation in `agents/dqn.py` uses Q-learning principles with neural network function approximation
 
 ### Deep Q-Network (DQN)
 - **Reference**: Mnih, V., et al. (2015). Human-level control through deep reinforcement learning. Nature, 518(7540), 529-533.
 - **Implementation**: Custom implementation in `agents/dqn.py` with experience replay and target network
-
-### REINFORCE
-- **Reference**: Williams, R. J. (1992). Simple statistical gradient-following algorithms for connectionist reinforcement learning. Machine learning, 8(3-4), 229-256.
-- **Implementation**: Custom implementation in `agents/reinforce.py`
 
 ### Actor-Critic (A2C)
 - **Reference**: Mnih, V., et al. (2016). Asynchronous methods for deep reinforcement learning. ICML.

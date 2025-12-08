@@ -12,7 +12,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from collections import defaultdict
 from agents.dqn import DQNAgent
-from agents.reinforce import REINFORCEAgent
 from agents.a2c import A2CAgent
 from environments.reward_wrapper import RocketRewardWrapper
 from training.trainer import set_seed, create_env_factory
@@ -27,13 +26,6 @@ def load_agent(algorithm: str, checkpoint_path: str):
     
     if algorithm == "dqn":
         agent = DQNAgent(
-            state_dim=8,
-            action_dim=4,
-            device=get_device()
-        )
-        agent.load(checkpoint_path)
-    elif algorithm == "reinforce":
-        agent = REINFORCEAgent(
             state_dim=8,
             action_dim=4,
             device=get_device()
@@ -272,7 +264,7 @@ if __name__ == "__main__":
     import argparse
     
     parser = argparse.ArgumentParser(description="Run error analysis on trained agent")
-    parser.add_argument("--algorithm", type=str, required=True, choices=["dqn", "reinforce", "a2c"])
+    parser.add_argument("--algorithm", type=str, required=True, choices=["dqn", "a2c"])
     parser.add_argument("--checkpoint", type=str, required=True, help="Path to checkpoint file")
     parser.add_argument("--num_episodes", type=int, default=50, help="Number of episodes to analyze")
     

@@ -57,7 +57,7 @@ Episode    Return       Length     Epsilon      LR           Val Return
 Analyze training logs and generate learning curves:
 
 ```bash
-python scripts/analyze_training.py --log logs/tabular_q_training_log.csv --window 100
+python scripts/analyze_training.py --log logs/dqn_adam_training_log.csv --window 100
 ```
 
 Options:
@@ -81,7 +81,7 @@ python scripts/evaluate_agent.py --algorithm dqn --checkpoint checkpoints/dqn/dq
 ```
 
 Options:
-- `--algorithm`: Algorithm name (tabular_q, dqn, reinforce, a2c)
+- `--algorithm`: Algorithm name (dqn, a2c)
 - `--checkpoint`: Path to checkpoint file
 - `--num_episodes`: Number of episodes to evaluate (default: 50)
 - `--test_seeds`: Custom test seeds (default: 200-209)
@@ -99,14 +99,8 @@ Options:
 ### Training with Diagnostics
 
 ```bash
-# Train tabular Q-learning
-python training/train_tabular.py --episodes 1000
-
 # Train DQN
 python training/train_dqn.py --episodes 1000 --optimizer adam
-
-# Train REINFORCE
-python training/train_reinforce.py --episodes 1000 --optimizer adam
 
 # Train A2C
 python training/train_a2c.py --episodes 1000 --optimizer adam
@@ -132,9 +126,6 @@ python scripts/test_visual.py --algorithm dqn --checkpoint checkpoints/dqn/dqn_b
 # Test without reward wrapper
 python scripts/test_visual.py --algorithm dqn --checkpoint checkpoints/dqn/dqn_best.pt --num_episodes 5 --no_wrapper
 
-# Test REINFORCE agent
-python scripts/test_visual.py --algorithm reinforce --checkpoint checkpoints/reinforce/reinforce_best.pt --num_episodes 5
-
 # Test A2C agent
 python scripts/test_visual.py --algorithm a2c --checkpoint checkpoints/a2c/a2c_best.pt --num_episodes 5
 ```
@@ -149,10 +140,10 @@ This will open a window showing the rocket landing attempts in real-time with:
 
 ```bash
 # Analyze training log
-python scripts/analyze_training.py --log logs/tabular_q_training_log.csv --window 100 --save_plot plots/analysis.png
+python scripts/analyze_training.py --log logs/dqn_adam_training_log.csv --window 100 --save_plot plots/analysis.png
 
 # Evaluate trained agent
-python scripts/evaluate_agent.py --algorithm tabular_q --checkpoint checkpoints/tabular_q/tabular_q_best.pkl --num_episodes 50
+python scripts/evaluate_agent.py --algorithm dqn --checkpoint checkpoints/dqn/dqn_best.pt --num_episodes 50
 ```
 
 ## Pasting to ChatGPT

@@ -204,7 +204,7 @@ After setup, you can:
 
 1. Train a simple agent:
    ```bash
-   python training/train_tabular.py --episodes 100
+   python training/train_dqn.py --episodes 100
    ```
 
 2. Run all experiments:

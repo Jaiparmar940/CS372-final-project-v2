@@ -122,7 +122,6 @@ python -c "import gymnasium as gym; env = gym.make('LunarLander-v3'); print('Suc
 ## Alternative: Use Pre-trained Models
 
 If Box2D installation continues to fail, you can:
-1. Use the tabular Q-learning agent on the toy environment (no Box2D needed)
-2. Train on a system where Box2D installs successfully
-3. Use the evaluation scripts with pre-trained checkpoints
+1. Train on a system where Box2D installs successfully
+2. Use the evaluation scripts with pre-trained checkpoints
 
