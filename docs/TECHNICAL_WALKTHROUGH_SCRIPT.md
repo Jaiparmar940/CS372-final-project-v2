@@ -19,19 +19,20 @@
 
 "This addresses **checkbox46** - DQN with experience replay and target networks.
 
-**Experience Replay** (`src/agents/dqn.py` lines 50-120):
-The `ExperienceReplay` class stores transitions in a circular buffer, enabling sample-efficient learning from past experiences.
+**Experience Replay** (`src/agents/dqn.py` lines 24-67):
+The `ExperienceReplay` class stores transitions in a circular buffer. `__init__` at line 30, `sample` at line 53, enabling sample-efficient learning from past experiences.
 
-**Target Network** (`src/agents/dqn.py` lines 350-380):
-Periodic weight copying every `target_update_freq` steps provides stable Q-value targets, preventing the moving target problem.
+**Target Network** (`src/agents/dqn.py` lines 132-136, 299-305):
+Target network initialized at line 132, copied from main network at line 135. Periodic weight copying every `target_update_freq` steps (lines 299-305) provides stable Q-value targets, preventing the moving target problem.
 
-**Synergistic Integration** (`src/agents/dqn.py` lines 400-430):
-The `update` method shows how they work together: sample batch from replay buffer (line 405), compute Q-values with main network (line 410), compute targets with target network (line 415), update main network (line 420), periodically update target (line 425)."
+**Synergistic Integration** (`src/agents/dqn.py` lines 251-305):
+The `update` method shows how they work together: sample batch from replay buffer (line 262), compute Q-values with main network (line 272), compute targets with target network (line 276), update main network (lines 283-290), periodically update target (lines 299-305)."
 
 **Code References:**
-- Experience replay: `src/agents/dqn.py` lines 50-120
-- Target updates: `src/agents/dqn.py` lines 350-380  
-- Update method: `src/agents/dqn.py` lines 400-430
+- Experience replay class: `src/agents/dqn.py` lines 24-67
+- Target network init: `src/agents/dqn.py` lines 132-136
+- Update method: `src/agents/dqn.py` lines 251-305
+- Target updates: `src/agents/dqn.py` lines 299-305
 
 ---
 
@@ -39,20 +40,21 @@ The `update` method shows how they work together: sample batch from replay buffe
 
 "This addresses **checkbox48** (policy gradient) and **checkbox49** (actor-critic).
 
-**Separate Networks** (`src/agents/a2c.py` lines 60-80):
+**Separate Networks** (`src/agents/a2c.py` lines 69-70):
 Two networks: policy network (`src/networks/policy_network.py`) outputs action probabilities, value network (`src/networks/value_network.py`) estimates state values.
 
-**Advantage Computation** (`src/agents/a2c.py` lines 300-350):
-Value network computes advantages using n-step returns: `advantage = G - V(state)` where G is n-step return.
+**Advantage Computation** (`src/agents/a2c.py` lines 214-247):
+`compute_advantages` method computes n-step returns (lines 229-241) and advantages: `advantage = G - V(state)` where G is n-step return (line 244).
 
-**Synergistic Updates** (`src/agents/a2c.py` lines 380-470):
-Policy network updates using policy gradient with advantages (lines 380-420), value network updates to better estimate returns (lines 420-470). Improved value estimates lead to better advantages, which improve policy updates - creating a positive feedback loop."
+**Synergistic Updates** (`src/agents/a2c.py` lines 249-335):
+`update` method: compute advantages (line 265), policy network updates using policy gradient with advantages (lines 324-328), value network updates to better estimate returns (lines 331-335). Improved value estimates lead to better advantages, which improve policy updates - creating a positive feedback loop."
 
 **Code References:**
-- Network init: `src/agents/a2c.py` lines 60-80
-- Advantage: `src/agents/a2c.py` lines 300-350
-- Policy updates: `src/agents/a2c.py` lines 380-420
-- Value updates: `src/agents/a2c.py` lines 420-470
+- Network init: `src/agents/a2c.py` lines 69-70
+- Advantage computation: `src/agents/a2c.py` lines 214-247
+- Update method: `src/agents/a2c.py` lines 249-335
+- Policy updates: `src/agents/a2c.py` lines 324-328
+- Value updates: `src/agents/a2c.py` lines 331-335
 
 ---
 
@@ -60,19 +62,19 @@ Policy network updates using policy gradient with advantages (lines 380-420), va
 
 "This addresses **checkbox47** - custom reward function.
 
-**Reward Wrapper** (`src/environments/reward_wrapper.py` lines 45-95):
-`RocketRewardWrapper` transforms sparse LunarLander rewards into dense shaped rewards with landing bonus, fuel penalty, crash penalty, and smoothness bonus.
+**Reward Wrapper** (`src/environments/reward_wrapper.py` lines 75-144):
+`RocketRewardWrapper.step` method transforms sparse LunarLander rewards into dense shaped rewards: fuel penalty (lines 101-104), smoothness penalty (lines 107-112), landing bonus (lines 123-125), crash penalty (lines 130-132).
 
-**Integration** (`src/training/trainer.py` lines 188-200):
-Wrapper integrated at environment creation. Shaped rewards provide learning signal at every step, not just episode termination.
+**Integration** (`src/training/trainer.py` lines 478-501):
+`create_env_factory` function wraps environment with `RocketRewardWrapper` at line 501. Shaped rewards provide learning signal at every step, not just episode termination.
 
-**Configurability** (`src/utils/config.py` lines 85-100):
-Reward coefficients parameterized via `RewardConfig` for hyperparameter tuning."
+**Configurability** (`src/utils/config.py` lines 38-45):
+Reward coefficients parameterized via `RewardConfig` class (landing_bonus, fuel_penalty, crash_penalty, smoothness_penalty) for hyperparameter tuning."
 
 **Code References:**
-- Reward wrapper: `src/environments/reward_wrapper.py` lines 45-95
-- Integration: `src/training/trainer.py` lines 188-200
-- Config: `src/utils/config.py` lines 85-100
+- Reward wrapper step: `src/environments/reward_wrapper.py` lines 75-144
+- Integration: `src/training/trainer.py` lines 478-501 (create_env_factory)
+- Config: `src/utils/config.py` lines 38-45 (RewardConfig class)
 
 ---
 
@@ -80,21 +82,21 @@ Reward coefficients parameterized via `RewardConfig` for hyperparameter tuning."
 
 "This addresses **checkbox0** (train/val/test split) and **checkbox4** (regularization).
 
-**Seed-Based Splits** (`src/training/trainer.py` lines 248-280):
-Training seeds 42-52, validation seeds 100-109, test seeds 200-209. Environment determinism enables fair comparison.
+**Seed-Based Splits** (`src/training/trainer.py` lines 248-282):
+Training on random training seeds (line 250), validation on separate validation seeds (lines 279-281). Training seeds 42-52, validation seeds 100-109, test seeds 200-209. Environment determinism enables fair comparison.
 
-**Early Stopping** (`src/training/trainer.py` lines 230-235, 310-330):
-Monitors validation return, stops if no improvement for `patience` episodes, saves best model.
+**Early Stopping** (`src/training/trainer.py` lines 232-235, 310-324):
+EarlyStopping class initialization (lines 232-235). Monitors validation return (lines 310-324), stops if no improvement for `patience` episodes, saves best model.
 
 **Regularization**:
-- L2 Weight Decay: `src/utils/config.py` lines 50-60
-- Dropout: `src/networks/dqn_network.py` line 45, `value_network.py` line 50"
+- L2 Weight Decay: `src/utils/config.py` lines 100-104 (weight_decay parameter in OptimizerConfig)
+- Dropout: `src/networks/dqn_network.py` lines 111-112, `value_network.py` lines 108-109"
 
 **Code References:**
-- Seed splits: `src/training/trainer.py` lines 248-280
-- Early stopping: `src/training/trainer.py` lines 230-235, 310-330
-- L2 decay: `src/utils/config.py` lines 50-60
-- Dropout: `src/networks/dqn_network.py` line 45
+- Seed splits: `src/training/trainer.py` lines 248-282
+- Early stopping: `src/training/trainer.py` lines 232-235, 310-324
+- L2 decay: `src/utils/config.py` lines 100-104
+- Dropout: `src/networks/dqn_network.py` lines 111-112
 
 ---
 
