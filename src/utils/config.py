@@ -57,6 +57,10 @@ class TrainingConfig:
     max_steps_per_episode: int = 1000
     gamma: float = 0.99
     
+    # Validation parameters
+    val_frequency: int = 20  # Validate every N episodes
+    val_episodes_per_seed: int = 5  # Number of episodes per seed during validation
+    
     # Early stopping
     early_stopping: bool = True
     patience: int = 50

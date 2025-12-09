@@ -1,20 +1,19 @@
-# This file was created by Cursor and fine tuned by Jaivir Parmar and Ryan Christ.
-# To recreate this file, prompt Cursor with: "Create a training script for A2C agent on LunarLander-v3 with command-line arguments for hyperparameters and configuration"
+# This file was created by Cursor.
+# To recreate this file, prompt Cursor with: "Create a training script for A2C agent with command-line arguments for hyperparameters"
 
 """
-Training script for A2C agent on LunarLander-v3.
+Training script for A2C (Advantage Actor-Critic) agent.
 """
 
 import argparse
 import os
 import sys
-import gymnasium as gym
 
-# Add project root to path
 # Add src directory to path
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(project_root, "src"))
 
+import gymnasium as gym
 from agents.a2c import A2CAgent
 from environments.reward_wrapper import RocketRewardWrapper
 from training.trainer import train_agent, set_seed
@@ -24,17 +23,22 @@ from utils.device import get_device
 
 def main():
     parser = argparse.ArgumentParser(description="Train A2C agent")
-    parser.add_argument("--episodes", type=int, default=10000, help="Number of training episodes")
-    parser.add_argument("--lr", type=float, default=1e-3, help="Learning rate")
+    
+    parser.add_argument("--episodes", type=int, default=50000, help="Number of training episodes")
+    parser.add_argument("--lr", type=float, default=7e-4, help="Learning rate (slightly higher for faster improvement)")
     parser.add_argument("--gamma", type=float, default=0.99, help="Discount factor")
-    parser.add_argument("--entropy_coef", type=float, default=0.01, help="Entropy regularization coefficient")
+    parser.add_argument("--entropy_coef", type=float, default=0.005, help="Entropy regularization coefficient (lower to reduce exploration once")
     parser.add_argument("--value_coef", type=float, default=0.5, help="Value loss coefficient")
-    parser.add_argument("--n_steps", type=int, default=5, help="Number of steps before update")
+    parser.add_argument("--n_steps", type=int, default=10, help="Number of steps before update (shorter for faster updates, longer for better")
     parser.add_argument("--optimizer", type=str, default="adam", choices=["adam", "rmsprop", "sgd"], help="Optimizer")
-    parser.add_argument("--weight_decay", type=float, default=0.0, help="L2 weight decay")
+    parser.add_argument("--weight_decay", type=float, default=1e-5, help="L2 weight decay (small amount for regularization)")
     parser.add_argument("--dropout", type=float, default=0.0, help="Dropout rate for value network")
-    parser.add_argument("--gradient_clip", type=float, default=10.0, help="Gradient clipping threshold")
-    parser.add_argument("--use_scheduler", action="store_true", help="Use learning rate scheduler")
+    parser.add_argument("--gradient_clip", type=float, default=0.5, help="Gradient clipping threshold (tighter for stability)")
+    parser.add_argument("--hidden_size", type=int, default=128, help="Hidden layer size (smaller = faster, default: 128)")
+    parser.add_argument("--val_frequency", type=int, default=30, help="Validation frequency in episodes (higher = faster, default: 20)")
+    parser.add_argument("--val_episodes_per_seed", type=int, default=1, help="Validation episodes per seed (1 = fastest, default: 1)")
+    parser.add_argument("--use_scheduler", action="store_true", help="Use learning rate scheduler (disabled by default to avoid over-decay)")
+    parser.add_argument("--no_scheduler", action="store_false", dest="use_scheduler", help="Disable learning rate scheduler")
     parser.add_argument("--seed", type=int, default=42, help="Random seed")
     parser.add_argument("--save_dir", type=str, default="models/a2c", help="Checkpoint directory")
     parser.add_argument("--plot_dir", type=str, default="data/plots", help="Plot directory")
@@ -42,26 +46,33 @@ def main():
     
     args = parser.parse_args()
     
-    # Set agent name based on optimizer if not specified
-    if args.agent_name is None:
-        args.agent_name = "a2c" if args.optimizer == "adam" else f"a2c_{args.optimizer}"
-    
-    # Set seed
+    # Set random seed
     set_seed(args.seed)
     
-    # Create environment to get dimensions
-    env = gym.make("LunarLander-v3")
-    state_dim = env.observation_space.shape[0]
-    action_dim = env.action_space.n
+    # Determine agent name
+    if args.agent_name is None:
+        agent_name = "a2c" if args.optimizer == "adam" else f"a2c_{args.optimizer}"
+    else:
+        agent_name = args.agent_name
     
-    # Network configuration
+    # Create environment factory
+    reward_config = RewardConfig()
+    
+    def lunar_lander_factory(seed):
+        env = gym.make("LunarLander-v3")
+        env = RocketRewardWrapper(env, reward_config)
+        set_seed(seed)
+        return env
+    
+    # Create agent
+    device = get_device()
+    
     network_config = NetworkConfig(
-        hidden_sizes=[128, 128],
+        hidden_sizes=[args.hidden_size, args.hidden_size],
         dropout_rate=args.dropout,
         use_dropout=args.dropout > 0.0
     )
     
-    # Optimizer configuration
     optimizer_config = OptimizerConfig(
         optimizer=args.optimizer,
         learning_rate=args.lr,
@@ -69,13 +80,9 @@ def main():
         use_scheduler=args.use_scheduler
     )
     
-    # Reward configuration
-    reward_config = RewardConfig()
-    
-    # Create agent
     agent = A2CAgent(
-        state_dim=state_dim,
-        action_dim=action_dim,
+        state_dim=8,
+        action_dim=4,
         network_config=network_config,
         optimizer_config=optimizer_config,
         gamma=args.gamma,
@@ -83,7 +90,7 @@ def main():
         value_coef=args.value_coef,
         n_steps=args.n_steps,
         gradient_clip=args.gradient_clip,
-        device=get_device()
+        device=device
     )
     
     # Training configuration
@@ -91,23 +98,18 @@ def main():
         num_episodes=args.episodes,
         train_seeds=list(range(42, 52)),
         val_seeds=list(range(100, 110)),
-        test_seeds=list(range(200, 210))
+        test_seeds=list(range(200, 210)),
+        val_frequency=args.val_frequency,
+        val_episodes_per_seed=args.val_episodes_per_seed
     )
     
-    # Create environment factory with reward wrapper
-    def env_factory(seed):
-        env = gym.make("LunarLander-v3")
-        env = RocketRewardWrapper(env, reward_config)
-        set_seed(seed)
-        return env
-    
     # Train agent
-    env_name_str = "LunarLander-v3 (with RocketRewardWrapper)" if reward_config else "LunarLander-v3"
+    env_name_str = "LunarLander-v3 (with RocketRewardWrapper)"
     train_stats = train_agent(
         agent,
-        env_factory,
+        lunar_lander_factory,
         config,
-        agent_name=args.agent_name,
+        agent_name=agent_name,
         algorithm_name="A2C",
         environment_name=env_name_str,
         reward_config=reward_config,
@@ -123,4 +125,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

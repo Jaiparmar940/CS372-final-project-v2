@@ -6,6 +6,10 @@ A comprehensive reinforcement learning project comparing Deep Q-Network (DQN) an
 
 This project implements and compares multiple reinforcement learning algorithms on Gymnasium's LunarLander-v3 environment, which simulates rocket landing with continuous state space and discrete actions. While earlier coursework involved basic tabular Q-learning on the simple Taxi environment (discrete states) and a basic DQN implementation on LunarLander (single network, minimal hyperparameter exploration), our project significantly extends this foundation with multi-network baselines (DQN, A2C), optimizer comparisons (Adam vs RMSprop), reward shaping through custom reward functions, extensive training (>50k training episodes), GPU-accelerated training with automatic device detection, and rigorous evaluation on separate validation/test seed sets. Unlike the coursework's simpler DQN with a single network architecture and minimal hyperparameter tuning, this project implements advanced deep RL techniques including experience replay buffers, target networks with periodic updates, separate policy and value networks for A2C, comprehensive regularization (L2 weight decay, dropout, early stopping, gradient clipping), hyperparameter sweep frameworks, and proper train/validation/test splits using seed-based evaluation. The project trains Deep Q-Network (DQN) agents with experience replay and target networks, as well as Actor-Critic (A2C) agents with separate policy and value networks. Both algorithms are evaluated on their ability to achieve safe landings while minimizing fuel consumption, with comprehensive metrics tracking success rates, crash rates, fuel usage, and episode returns. The project includes custom reward functions, train/validation/test splits, regularization techniques, hyperparameter tuning, and visual demonstrations of agent behavior.
 
+### Why Rocket Landing?
+
+Rocket landing represents a critical real-world challenge in aerospace engineering and autonomous systems. Successfully landing a rocket requires precise control under uncertainty, balancing multiple competing objectives: achieving a safe landing within the designated landing pad, minimizing fuel consumption for cost efficiency, and maintaining smooth control to avoid structural damage. This problem is particularly relevant given recent advances in reusable rocket technology (e.g., SpaceX Falcon 9, Blue Origin New Shepard), where autonomous landing systems are essential for economic viability. The LunarLander-v3 environment captures the core challenges of this problem: continuous state space (position, velocity, angle, angular velocity), discrete control actions (engine firings), and stochastic dynamics. By solving this problem with reinforcement learning, we demonstrate how modern ML techniques can address complex control tasks with safety and efficiency constraints.
+
 ## Quick Start
 
 ### Installation
@@ -101,6 +105,14 @@ After training:
 - Optimizer choice (Adam vs RMSprop) affects convergence speed and final performance
 - Early stopping based on validation performance prevents overfitting to training seeds
 
+### Hyperparameter Tuning Framework
+
+The project includes a systematic hyperparameter tuning framework (`src/hyperparameter_tuning/sweep.py`) that performs grid search over key hyperparameters including learning rates, discount factors, epsilon schedules, reward coefficients, entropy regularization, and network architectures. The framework uses validation-based selection to identify optimal configurations, logging results to CSV for analysis. This enables systematic exploration of the hyperparameter space and identification of configurations that generalize well across different environment seeds.
+
+### Optimizer Comparison
+
+The project compares multiple optimizers (Adam vs RMSprop) for DQN training, demonstrating how optimizer choice affects convergence speed and final performance. Adam typically provides faster initial convergence due to adaptive learning rates, while RMSprop can offer more stable training in some cases. The comparison is conducted on identical network architectures and hyperparameters, with results logged and visualized to show convergence differences. This analysis helps identify the most effective optimization strategy for the rocket landing task.
+
 ## Individual Contributions
 
 This project was completed collaboratively by **Jay Parmar** and **Ryan Christ**. All code development was assisted by Cursor AI, with each component assigned as follows:
@@ -161,6 +173,52 @@ cs372final/
 ├── docs/                   # Additional documentation
 └── requirements.txt        # Python dependencies
 ```
+
+## Design Choices and Justifications
+
+This section explains the key design decisions made in the project and their rationale.
+
+### Custom Reward Function
+
+The standard LunarLander-v3 reward function provides sparse rewards primarily at episode termination (landing success or crash). Our custom reward function (`src/environments/reward_wrapper.py`) addresses this limitation by providing dense, shaped rewards that guide learning toward desired behaviors. The reward function includes:
+
+- **Landing Bonus**: Large positive reward (+100) for successful landings, encouraging the agent to complete the task
+- **Fuel Penalty**: Small negative reward per engine firing (-0.1 for main engine, -0.05 for side engines), encouraging fuel-efficient trajectories
+- **Crash Penalty**: Large negative reward (-100) for crashes, strongly discouraging unsafe landings
+- **Smoothness Penalty**: Small penalty for large action changes, encouraging stable control
+
+These components are parameterized through `RewardConfig`, enabling hyperparameter tuning to balance safety vs. efficiency. The shaped rewards provide more learning signal than sparse rewards, leading to faster convergence and better final performance.
+
+### Multiple RL Paradigms (DQN and A2C)
+
+We implement both value-based (DQN) and policy-based (A2C) approaches to provide a comprehensive comparison of different RL paradigms. DQN uses Q-learning with function approximation, learning action values through temporal difference learning. A2C uses policy gradients with value function estimation, learning a policy directly through advantage-weighted updates. This dual approach allows us to:
+
+1. Compare sample efficiency: DQN with experience replay can reuse past experiences, while A2C learns on-policy
+2. Compare stability: DQN's target network provides stable targets, while A2C's value function reduces variance in policy gradients
+3. Understand trade-offs: Value-based methods excel at discrete action spaces, while policy-based methods naturally handle stochastic policies
+
+Both approaches are evaluated on the same task with the same metrics, enabling fair comparison of their strengths and weaknesses.
+
+### Train/Validation/Test Split Using Seeds
+
+Unlike supervised learning where data can be randomly split, RL environments are deterministic given a seed. We use seed-based splits to create distinct train/validation/test sets:
+
+- **Training Seeds** (42-51): Used for agent training, with random seed selection per episode to ensure diversity
+- **Validation Seeds** (100-109): Used for model selection and early stopping, evaluated periodically during training
+- **Test Seeds** (200-209): Used for final evaluation only, ensuring unbiased performance estimates
+
+This approach ensures that validation and test performance reflect true generalization to unseen environment configurations, not just memorization of training seeds. The seed-based split is implemented in `src/training/trainer.py` and `src/utils/config.py`, with validation performed every N episodes (configurable via `val_frequency`) using multiple episodes per seed (configurable via `val_episodes_per_seed`) to reduce variance.
+
+### Regularization Techniques
+
+To prevent overfitting and improve generalization, we employ multiple regularization techniques:
+
+- **L2 Weight Decay**: Applied through optimizer configuration (default 1e-5), penalizing large weights to prevent overfitting to training seeds
+- **Dropout**: Applied in Q-network and value network (configurable rate, default 0.0), randomly zeroing activations during training to prevent co-adaptation of neurons
+- **Early Stopping**: Monitors validation performance and stops training when validation returns plateau, preventing overfitting to training data
+- **Gradient Clipping**: Clips gradients to a maximum norm (default 0.5-1.0), preventing exploding gradients and improving training stability
+
+These techniques work together to ensure the learned policies generalize well to unseen environment configurations, not just the specific seeds used during training.
 
 ## Attribution
 

@@ -272,10 +272,12 @@ def train_agent(
         
         # Validation evaluation
         val_return = None
-        if (episode + 1) % config.log_frequency == 0:
+        val_frequency = getattr(config, 'val_frequency', config.log_frequency)
+        val_episodes_per_seed = getattr(config, 'val_episodes_per_seed', 5)
+        if (episode + 1) % val_frequency == 0:
             # Use more episodes per seed to reduce noise in validation metrics
             val_metrics = evaluate_on_seeds(
-                agent, env_factory, config.val_seeds, num_episodes_per_seed=5
+                agent, env_factory, config.val_seeds, num_episodes_per_seed=val_episodes_per_seed
             )
             val_return = val_metrics["mean_return"]
             val_returns.append(val_return)
