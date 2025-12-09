@@ -119,11 +119,22 @@ All results are backed by quantitative data from `results/test_results.csv`, `re
 
 ### Key Findings
 
-- DQN with experience replay and target network achieves stable learning with good sample efficiency
-- Actor-Critic (A2C) provides policy gradient approach with value function estimation for stable updates
-- Custom reward function balances safety and fuel efficiency objectives
-- Optimizer choice (Adam vs RMSprop) affects convergence speed and final performance
+**Test Set Performance (50 episodes, with reward wrapper):**
+
+- **DQN (Adam)**: Achieves **100% success rate** with mean return of **373.6 ± 21.6** and fuel usage of **75.9 units** - best overall performance
+- **DQN (RMSprop)**: Also achieves **100% success rate** with mean return of **366.2 ± 19.6** and fuel usage of **92.3 units** - slightly less fuel-efficient than Adam
+- **A2C (Adam)**: Achieves **64% success rate** with mean return of **225.9 ± 202.2** and fuel usage of **58.1 units** - most fuel-efficient but lower success rate
+- **A2C (SGD)**: Achieves only **28% success rate** with mean return of **-85.0 ± 191.8** and fuel usage of **232.4 units** - fails to converge effectively
+
+**Key Insights:**
+
+- DQN with experience replay and target network achieves **perfect success rates** (100%) with stable, low-variance performance
+- Actor-Critic (A2C) with Adam optimizer achieves good performance (64% success) but shows higher variance than DQN
+- **Optimizer choice is critical**: For A2C, Adam is essential (64% vs 28% success); for DQN, both Adam and RMSprop work well, but Adam is more fuel-efficient
+- Custom reward function enables learning by providing dense learning signals at every step
 - Early stopping based on validation performance prevents overfitting to training seeds
+
+See [docs/EVALUATION.md](docs/EVALUATION.md) for comprehensive quantitative analysis and detailed comparisons.
 
 ### Hyperparameter Tuning Framework
 
