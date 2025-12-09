@@ -70,10 +70,11 @@ For detailed setup instructions, see [docs/SETUP.md](docs/SETUP.md).
 
 ## Video Links
 
-**Demo Video**: [Link to be added]
+**Demo Video**: [ProjectDemo.mov](videos/ProjectDemo.mov)
 - Non-technical demonstration of the rocket landing agents
 - Shows successful landings and key features
 - Appropriate for general audience
+- 3-5 minute video explaining the project and results
 
 **Technical Walkthrough**: [Link to be added]
 - Code structure and architecture explanation
