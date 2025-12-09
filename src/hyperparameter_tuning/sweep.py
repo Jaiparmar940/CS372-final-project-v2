@@ -21,7 +21,9 @@ def grid_search(
     env_factory: Callable,
     train_config: TrainingConfig,
     val_seeds: List[int],
-    results_dir: str = "hyperparameter_results"
+    results_dir: str = "hyperparameter_results",
+    fast_mode: bool = False,
+    val_episodes_per_seed: int = None
 ) -> pd.DataFrame:
     """
     Perform grid search over hyperparameters.
@@ -33,11 +35,29 @@ def grid_search(
         train_config: Training configuration
         val_seeds: Validation seeds for evaluation
         results_dir: Directory to save results
+        fast_mode: If True, use faster settings (fewer episodes, less validation)
+        val_episodes_per_seed: Number of episodes per seed for validation (default: 1 if fast_mode, else 3)
         
     Returns:
         DataFrame with results for all hyperparameter combinations
     """
     os.makedirs(results_dir, exist_ok=True)
+    
+    # Optimize for speed if fast_mode is enabled
+    if fast_mode:
+        # Reduce episodes if not already set lower
+        if train_config.num_episodes > 300:
+            train_config.num_episodes = 300
+        # More aggressive early stopping
+        train_config.patience = 30
+        train_config.val_frequency = 30  # Validate less frequently
+        # Use fewer validation seeds
+        val_seeds = val_seeds[:5] if len(val_seeds) > 5 else val_seeds
+        if val_episodes_per_seed is None:
+            val_episodes_per_seed = 1
+    else:
+        if val_episodes_per_seed is None:
+            val_episodes_per_seed = 3
     
     # Generate all combinations
     param_names = list(param_grid.keys())
@@ -48,6 +68,8 @@ def grid_search(
     
     print(f"Starting grid search over {len(combinations)} combinations...")
     print(f"Parameters: {param_names}")
+    if fast_mode:
+        print(f"FAST MODE: {train_config.num_episodes} episodes, {len(val_seeds)} val seeds, {val_episodes_per_seed} episodes/seed")
     
     for idx, combination in enumerate(combinations):
         params = dict(zip(param_names, combination))
@@ -69,7 +91,7 @@ def grid_search(
         
         # Evaluate on validation set
         val_metrics = evaluate_on_seeds(
-            agent, env_factory, val_seeds, num_episodes_per_seed=3
+            agent, env_factory, val_seeds, num_episodes_per_seed=val_episodes_per_seed
         )
         
         # Record results
@@ -102,7 +124,9 @@ def hyperparameter_sweep_dqn(
     env_factory: Callable,
     train_config: TrainingConfig,
     val_seeds: List[int],
-    results_dir: str = "hyperparameter_results/dqn"
+    results_dir: str = "hyperparameter_results/dqn",
+    fast_mode: bool = False,
+    reduced_grid: bool = False
 ):
     """
     Perform hyperparameter sweep for DQN.
@@ -112,6 +136,8 @@ def hyperparameter_sweep_dqn(
         train_config: Training configuration
         val_seeds: Validation seeds
         results_dir: Directory to save results
+        fast_mode: If True, use faster settings (fewer episodes, less validation)
+        reduced_grid: If True, use smaller hyperparameter grid (fewer combinations)
     """
     from agents.dqn import DQNAgent
     from utils.device import get_device
@@ -138,18 +164,32 @@ def hyperparameter_sweep_dqn(
             "epsilon_decay": kwargs.get("epsilon_decay", 0.995),
             "device": get_device()
         }
-        defaults.update(kwargs)
+        # Filter out hyperparameters that are already handled in config objects
+        # These should not be passed directly to DQNAgent
+        excluded_params = {"learning_rate", "optimizer", "weight_decay", "hidden_sizes", "dropout_rate", "use_dropout", "use_scheduler"}
+        filtered_kwargs = {k: v for k, v in kwargs.items() if k not in excluded_params}
+        defaults.update(filtered_kwargs)
         return DQNAgent(**defaults)
     
     # Define parameter grid
-    param_grid = {
-        "learning_rate": [1e-4, 5e-4, 1e-3, 5e-3],
-        "gamma": [0.95, 0.99, 0.999],
-        "optimizer": ["adam", "rmsprop"],
-        "weight_decay": [0.0, 1e-5, 1e-4]
-    }
+    if reduced_grid:
+        # Reduced grid: fewer combinations (16 instead of 72)
+        param_grid = {
+            "learning_rate": [5e-4, 1e-3],  # 2 values instead of 4
+            "gamma": [0.95, 0.99],  # 2 values instead of 3
+            "optimizer": ["adam", "rmsprop"],  # Keep both
+            "weight_decay": [0.0, 1e-4]  # 2 values instead of 3
+        }
+    else:
+        # Full grid
+        param_grid = {
+            "learning_rate": [1e-4, 5e-4, 1e-3, 5e-3],
+            "gamma": [0.95, 0.99, 0.999],
+            "optimizer": ["adam", "rmsprop"],
+            "weight_decay": [0.0, 1e-5, 1e-4]
+        }
     
-    return grid_search(param_grid, agent_factory, env_factory, train_config, val_seeds, results_dir)
+    return grid_search(param_grid, agent_factory, env_factory, train_config, val_seeds, results_dir, fast_mode=fast_mode)
 
 
 def hyperparameter_sweep_policy(
@@ -157,7 +197,9 @@ def hyperparameter_sweep_policy(
     train_config: TrainingConfig,
     val_seeds: List[int],
     agent_type: str = "a2c",  # "a2c"
-    results_dir: str = "hyperparameter_results"
+    results_dir: str = "hyperparameter_results",
+    fast_mode: bool = False,
+    reduced_grid: bool = False
 ):
     """
     Perform hyperparameter sweep for policy gradient methods.
@@ -188,25 +230,48 @@ def hyperparameter_sweep_policy(
             "entropy_coef": kwargs.get("entropy_coef", 0.01),
             "device": get_device()
         }
-        defaults.update(kwargs)
+        # Filter out params handled inside config objects so we don't pass them twice
+        excluded_params = {"learning_rate", "optimizer", "weight_decay", "hidden_sizes"}
+        filtered_kwargs = {k: v for k, v in kwargs.items() if k not in excluded_params}
+        defaults.update(filtered_kwargs)
         
         if agent_type == "a2c":
             defaults["value_coef"] = kwargs.get("value_coef", 0.5)
             return A2CAgent(**defaults)
     
     # Define parameter grid
-    param_grid = {
-        "learning_rate": [1e-4, 5e-4, 1e-3],
-        "gamma": [0.95, 0.99, 0.999],
-        "entropy_coef": [0.001, 0.01, 0.1],
-        "optimizer": ["adam", "sgd"]
-    }
-    
-    if agent_type == "a2c":
-        param_grid["value_coef"] = [0.25, 0.5, 1.0]
+    if reduced_grid:
+        # Smaller grid for fast sweeps (16 combos)
+        param_grid = {
+            "learning_rate": [5e-4, 1e-3],  # 2 values
+            "gamma": [0.95, 0.99],  # 2 values
+            "entropy_coef": [0.001, 0.01],  # 2 values
+            "optimizer": ["adam"],  # 1 value
+        }
+        if agent_type == "a2c":
+            param_grid["value_coef"] = [0.5, 1.0]  # 2 values
+    else:
+        # Full grid (162 combos for A2C)
+        param_grid = {
+            "learning_rate": [1e-4, 5e-4, 1e-3],
+            "gamma": [0.95, 0.99, 0.999],
+            "entropy_coef": [0.001, 0.01, 0.1],
+            "optimizer": ["adam", "sgd"]
+        }
+        
+        if agent_type == "a2c":
+            param_grid["value_coef"] = [0.25, 0.5, 1.0]
     
     results_dir = os.path.join(results_dir, agent_type)
-    return grid_search(param_grid, agent_factory, env_factory, train_config, val_seeds, results_dir)
+    return grid_search(
+        param_grid,
+        agent_factory,
+        env_factory,
+        train_config,
+        val_seeds,
+        results_dir,
+        fast_mode=fast_mode
+    )
 
 
 def hyperparameter_sweep_reward(
