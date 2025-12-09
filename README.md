@@ -76,7 +76,7 @@ For detailed setup instructions, see [docs/SETUP.md](docs/SETUP.md).
 - Appropriate for general audience
 - 3-5 minute video explaining the project and results
 
-**Technical Walkthrough**: [Link to be added]
+**Technical Walkthrough**: [TechincalVideo.mov](videos/TechincalVideo.mov)
 - Code structure and architecture explanation
 - ML techniques and key contributions
 - Training process and evaluation methodology
