@@ -1,3 +1,6 @@
+# This file was created by Cursor.
+# To recreate this file, prompt Cursor with: "Implement a Deep Q-Network (DQN) agent with experience replay buffer, target network, epsilon-greedy exploration, and support for configurable optimizers and regularization"
+
 """
 Deep Q-Network (DQN) agent with experience replay and target network.
 Implements standard DQN algorithm with configurable optimizers and regularization.

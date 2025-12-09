@@ -1,3 +1,6 @@
+# This file was created by Cursor.
+# To recreate this file, prompt Cursor with: "Create an analysis script that reads training CSV logs, computes moving averages, and generates learning curves"
+
 """
 Analysis script for training logs.
 Reads CSV logs, computes moving averages, and generates learning curves.

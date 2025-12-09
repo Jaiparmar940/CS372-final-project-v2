@@ -1,3 +1,6 @@
+# This file was created by Cursor.
+# To recreate this file, prompt Cursor with: "Implement a hyperparameter tuning framework with grid search that systematically sweeps over learning rates, discount factors, and reward coefficients, logging results to CSV"
+
 """
 Hyperparameter tuning framework with grid search and CSV logging.
 Supports systematic sweeps over key hyperparameters.

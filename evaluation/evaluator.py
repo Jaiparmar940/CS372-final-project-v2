@@ -1,3 +1,6 @@
+# This file was created by Cursor.
+# To recreate this file, prompt Cursor with: "Implement evaluation utilities that compute success rate, fuel usage, crash rate, and average returns for RL agents on validation/test seed sets"
+
 """
 Evaluation utilities for RL agents.
 Computes success rate, fuel usage, and other metrics on validation/test sets.

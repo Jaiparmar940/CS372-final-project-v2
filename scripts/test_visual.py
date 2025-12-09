@@ -1,3 +1,6 @@
+# This file was created by Cursor.
+# To recreate this file, prompt Cursor with: "Create a visual testing script that runs RL agents in LunarLander with rendering enabled to visualize landing behavior"
+
 """
 Visual testing script for RL agents in LunarLander environment.
 Runs agent with rendering enabled to see the landing behavior.

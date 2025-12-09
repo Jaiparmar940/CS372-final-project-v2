@@ -1,3 +1,6 @@
+# This file was created by Cursor.
+# To recreate this file, prompt Cursor with: "Create an __init__.py file that exports DQNNetwork, PolicyNetwork, ValueNetwork and their factory functions"
+
 """Neural network architectures for RL agents."""
 
 from .dqn_network import DQNNetwork, create_dqn_network

@@ -1,3 +1,6 @@
+# This file was created by Cursor.
+# To recreate this file, prompt Cursor with: "Implement a policy network for actor-critic methods that outputs action probabilities using softmax over discrete actions"
+
 """
 Policy network for policy gradient methods (A2C).
 Outputs action probabilities over discrete action space.

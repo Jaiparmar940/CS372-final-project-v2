@@ -1,3 +1,6 @@
+# This file was created by Cursor.
+# To recreate this file, prompt Cursor with: "Create an evaluation script that loads trained agent checkpoints and evaluates them on held-out test seed sets"
+
 """
 Evaluation entry point for trained agents.
 Loads best checkpoint and evaluates on held-out test seeds.

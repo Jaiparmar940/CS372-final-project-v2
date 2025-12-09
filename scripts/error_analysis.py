@@ -1,3 +1,6 @@
+# This file was created by Cursor.
+# To recreate this file, prompt Cursor with: "Create an error analysis script that analyzes failure cases and identifies when and why RL agents fail to land successfully"
+
 """
 Error analysis: Analyze failure cases and agent behavior.
 Identifies when and why agents fail to land successfully.

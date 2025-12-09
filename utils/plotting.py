@@ -1,3 +1,6 @@
+# This file was created by Cursor.
+# To recreate this file, prompt Cursor with: "Implement plotting utilities to generate learning curves with moving averages, comparison plots across agents, and evaluation metric visualizations"
+
 """
 Plotting utilities for RL experiments.
 Generates learning curves, comparison plots, and evaluation metrics.

@@ -1,3 +1,6 @@
+# This file was created by Cursor.
+# To recreate this file, prompt Cursor with: "Create a script to regenerate all plots from saved agent checkpoints and training logs"
+
 """
 Regenerate all plots from saved agent checkpoints.
 """

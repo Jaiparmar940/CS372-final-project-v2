@@ -1,3 +1,6 @@
+# This file was created by Cursor.
+# To recreate this file, prompt Cursor with: "Create an __init__.py file that exports device utilities, config classes, and plotting functions"
+
 """Utility modules for RL project."""
 
 from .device import get_device, to_device

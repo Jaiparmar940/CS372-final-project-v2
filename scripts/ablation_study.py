@@ -1,3 +1,6 @@
+# This file was created by Cursor.
+# To recreate this file, prompt Cursor with: "Create an ablation study script that compares DQN with and without experience replay, target network, and reward shaping to demonstrate the impact of each component"
+
 """
 Ablation study comparing different design choices in DQN.
 Demonstrates the impact of key components: experience replay, target network, and reward shaping.

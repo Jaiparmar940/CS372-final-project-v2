@@ -1,3 +1,6 @@
+# This file was created by Cursor and fine tuned by Jaivir Parmar and Ryan Christ.
+# To recreate this file, prompt Cursor with: "Create a training script for DQN agent on LunarLander-v3 with command-line arguments for hyperparameters and configuration"
+
 """
 Training script for DQN agent on LunarLander-v3.
 """

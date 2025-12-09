@@ -1,3 +1,6 @@
+# This file was created by Cursor.
+# To recreate this file, prompt Cursor with: "Implement a custom reward wrapper for LunarLander-v3 that parameterizes rewards for landing success, fuel usage, and smoothness of control"
+
 """
 Custom reward wrapper for LunarLander-v3 environment.
 Implements parameterized reward function that trades off landing success,

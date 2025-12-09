@@ -1,3 +1,6 @@
+# This file was created by Cursor.
+# To recreate this file, prompt Cursor with: "Create a script that runs all training experiments for DQN and A2C agents and generates comparison plots"
+
 """
 Run all training experiments for comparison.
 Trains all agents and generates comparison plots.
@@ -16,6 +19,7 @@ from training.trainer import train_agent, create_env_factory, set_seed, evaluate
 from evaluation.compare_agents import compare_all_agents, plot_learning_curves_comparison
 from utils.config import TrainingConfig, NetworkConfig, OptimizerConfig, RewardConfig
 from utils.device import get_device
+from scripts.test_visual import test_visual
 
 
 def main():
@@ -134,6 +138,39 @@ def main():
     
     # Plot learning curves comparison
     plot_learning_curves_comparison(agents, plot_dir="plots")
+    
+    # 5. Visual demonstrations for each algorithm
+    print("\n" + "="*80)
+    print("5. Visual Demonstrations")
+    print("="*80)
+    
+    # Map agent names to their checkpoint paths and algorithm types
+    agent_demos = [
+        ("DQN (Adam)", "dqn", "checkpoints/dqn/dqn_adam_best.pt"),
+        ("DQN (RMSprop)", "dqn", "checkpoints/dqn/dqn_rmsprop_best.pt"),
+        ("A2C (Adam)", "a2c", "checkpoints/a2c/a2c_best.pt"),
+    ]
+    
+    for agent_name, algorithm, checkpoint_path in agent_demos:
+        if os.path.exists(checkpoint_path):
+            print(f"\n{'='*80}")
+            print(f"Visual Demonstration: {agent_name}")
+            print(f"{'='*80}")
+            try:
+                test_visual(
+                    algorithm=algorithm,
+                    checkpoint_path=checkpoint_path,
+                    num_episodes=3,  # Run 3 episodes for demonstration
+                    use_reward_wrapper=True,
+                    render_mode="human",
+                    delay=0.01
+                )
+            except Exception as e:
+                print(f"Error running visual demonstration for {agent_name}: {e}")
+                print("Skipping visual demo (this is okay if display is not available)")
+        else:
+            print(f"\nWarning: Checkpoint not found for {agent_name}: {checkpoint_path}")
+            print("Skipping visual demonstration")
     
     print("\n" + "="*80)
     print("All experiments complete!")

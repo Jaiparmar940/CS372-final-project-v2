@@ -1,3 +1,6 @@
+# This file was created by Cursor.
+# To recreate this file, prompt Cursor with: "Implement device detection utilities that automatically detect and use CUDA, MPS (Apple Silicon), or CPU for PyTorch tensors"
+
 """
 Device detection utilities for GPU/CPU support.
 Automatically detects and uses CUDA (NVIDIA), MPS (Apple Silicon), or CPU.

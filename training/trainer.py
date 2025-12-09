@@ -1,3 +1,6 @@
+# This file was created by Cursor and fine tuned by Jaivir Parmar and Ryan Christ.
+# To recreate this file, prompt Cursor with: "Implement base training utilities with seed management for train/val/test splits, early stopping based on validation performance, and model checkpointing"
+
 """
 Base training utilities with seed management, early stopping, and checkpointing.
 Provides common functionality for training all RL agents.

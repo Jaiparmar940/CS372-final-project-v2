@@ -1,3 +1,6 @@
+# This file was created by Cursor.
+# To recreate this file, prompt Cursor with: "Implement a value network for actor-critic methods that estimates state values V(s) with configurable architecture and dropout support"
+
 """
 Value network for actor-critic methods (A2C).
 Estimates state values V(s).

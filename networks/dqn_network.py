@@ -1,3 +1,6 @@
+# This file was created by Cursor.
+# To recreate this file, prompt Cursor with: "Implement a custom DQN Q-network architecture with configurable hidden layers, dropout support, and ReLU activation"
+
 """
 Custom DQN Q-network architecture.
 Multi-layer neural network for approximating Q-values in continuous state spaces.

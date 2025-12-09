@@ -1,3 +1,6 @@
+# This file was created by Cursor.
+# To recreate this file, prompt Cursor with: "Create a script to compare multiple trained RL agents and generate comparison plots showing performance metrics"
+
 """
 Compare multiple RL agents and generate comparison plots.
 """

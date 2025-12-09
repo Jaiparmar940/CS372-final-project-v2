@@ -1,3 +1,6 @@
+# This file was created by Cursor.
+# To recreate this file, prompt Cursor with: "Implement configuration management with dataclasses for network config, optimizer config, training config, and reward config"
+
 """
 Configuration management for RL experiments.
 Supports YAML/JSON config files and easy parameter switching.

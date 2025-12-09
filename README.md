@@ -37,6 +37,14 @@ pip install -r requirements.txt
 
 **Note**: All scripts should be run from the project root directory. The scripts automatically handle Python path setup.
 
+### Run All Experiments
+
+```bash
+python scripts/run_all_experiments.py
+```
+
+This will train all agents and generate comparison plots.
+
 #### DQN
 
 ```bash
@@ -52,14 +60,6 @@ python training/train_dqn.py --episodes 1000 --optimizer rmsprop
 ```bash
 python training/train_a2c.py --episodes 1000 --optimizer adam
 ```
-
-### Run All Experiments
-
-```bash
-python scripts/run_all_experiments.py
-```
-
-This will train all agents and generate comparison plots.
 
 ### Evaluation
 

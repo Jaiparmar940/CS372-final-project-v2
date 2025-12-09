@@ -1,3 +1,6 @@
+# This file was created by Cursor.
+# To recreate this file, prompt Cursor with: "Implement an Advantage Actor-Critic (A2C) agent with separate policy and value networks, advantage computation, and support for entropy regularization"
+
 """
 Actor-Critic (A2C) agent.
 Implements Advantage Actor-Critic with separate policy and value networks.
