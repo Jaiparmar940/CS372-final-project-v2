@@ -105,6 +105,18 @@ After training:
 - **Logs**: Saved to `data/logs/` (episode-by-episode training logs in CSV format)
 - **Models**: Saved to `models/` (best checkpoints and periodic checkpoints)
 
+### Comprehensive Evaluation Report
+
+For detailed quantitative analysis and comprehensive evaluation results, see **[docs/EVALUATION.md](docs/EVALUATION.md)**. This document includes:
+
+- **Optimizer Comparison**: Detailed quantitative comparison of Adam vs RMSprop (DQN) and Adam vs SGD (A2C) with test set results, success rates, fuel efficiency, and performance metrics
+- **Model Architecture Comparison**: Quantitative DQN vs A2C comparison showing success rates, returns, stability, and fuel efficiency trade-offs
+- **Error Analysis**: Detailed failure mode analysis for all models including crash statistics, failure patterns, and visualizations
+- **Ablation Study Results**: Quantitative analysis of design choices (experience replay, target networks, custom reward shaping) and their impact on performance
+- **Summary and Conclusions**: Performance summary tables, key findings, and recommendations for real-world applications
+
+All results are backed by quantitative data from `results/test_results.csv`, `results/validation_results.csv`, error analysis CSVs, and ablation study results.
+
 ### Key Findings
 
 - DQN with experience replay and target network achieves stable learning with good sample efficiency
