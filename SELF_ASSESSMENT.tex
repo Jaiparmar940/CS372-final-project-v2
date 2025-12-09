@@ -101,43 +101,45 @@ This document lists all rubric items claimed for this project with evidence loca
 
 \subsubsection*{checkbox16: Compared multiple optimizers (e.g., SGD vs Adam vs AdamW) with documented evaluation (5 pts)}
 \begin{itemize}
-    \item \textbf{Evidence}: \texttt{src/scripts/run\_all\_experiments.py} lines 60-99 -- DQN trained with both Adam and RMSprop optimizers
-    \item \textbf{Evidence}: \texttt{src/scripts/run\_all\_experiments.py} lines 60-76 -- DQN with Adam optimizer
-    \item \textbf{Evidence}: \texttt{src/scripts/run\_all\_experiments.py} lines 83-99 -- DQN with RMSprop optimizer
-    \item \textbf{Evidence}: \texttt{data/plots/dqn\_adam\_learning\_curve.png} and \texttt{data/plots/dqn\_rmsprop\_learning\_curve.png} -- Comparison plots
-    \item \textbf{Evidence}: \texttt{README.md} lines 112-114 -- Documentation of optimizer comparison
+    \item \textbf{Evidence}: \texttt{docs/EVALUATION.md} Section 1 "Optimizer Comparison" -- Comprehensive quantitative comparison of optimizers
+    \item \textbf{Evidence}: \texttt{docs/EVALUATION.md} -- DQN: Adam vs RMSprop comparison with test results (373.61 vs 366.23 return, 100\% vs 100\% success)
+    \item \textbf{Evidence}: \texttt{docs/EVALUATION.md} -- A2C: Adam vs SGD comparison showing Adam's superiority (64\% vs 28\% success, 225.93 vs -84.99 return)
+    \item \textbf{Evidence}: \texttt{results/test\_results.csv} -- Quantitative test results for all optimizer combinations
+    \item \textbf{Evidence}: \texttt{data/plots/all\_models\_learning\_curves.png} -- Visual comparison of all four models (DQN Adam/RMSprop, A2C Adam/SGD)
+    \item \textbf{Evidence}: \texttt{src/scripts/run\_all\_experiments.py} lines 60-99 -- Training scripts for all optimizer combinations
 \end{itemize}
 
 \subsection{Model Evaluation \& Analysis}
 
 \subsubsection*{checkbox63: Performed error analysis with visualization or discussion of failure cases (5 pts)}
 \begin{itemize}
-    \item \textbf{Evidence}: \texttt{src/scripts/error\_analysis.py} entire file -- Error analysis script
-    \item \textbf{Evidence}: \texttt{src/scripts/error\_analysis.py} lines 53-135 -- Analysis of failure cases (crashes, bad landings, timeouts)
-    \item \textbf{Evidence}: \texttt{src/scripts/error\_analysis.py} lines 141-215 -- Visualization of error analysis results
-    \item \textbf{Evidence}: \texttt{src/scripts/error\_analysis.py} lines 260-265 -- CSV export of crash details
+    \item \textbf{Evidence}: \texttt{docs/EVALUATION.md} Section 3 "Error Analysis" -- Comprehensive error analysis with quantitative results
+    \item \textbf{Evidence}: \texttt{docs/EVALUATION.md} -- Detailed failure mode analysis: DQN (Adam) 10\% crashes, A2C (Adam) 34\% crashes, A2C (SGD) 70\% crashes
+    \item \textbf{Evidence}: \texttt{error\_analysis/dqn\_adam\_error\_analysis.png} -- Visualization of DQN Adam failure cases
+    \item \textbf{Evidence}: \texttt{error\_analysis/a2c\_adam\_error\_analysis.png} -- Visualization of A2C Adam failure cases
+    \item \textbf{Evidence}: \texttt{error\_analysis/a2c\_sgd\_error\_analysis.png} -- Visualization of A2C SGD failure cases
+    \item \textbf{Evidence}: \texttt{error\_analysis/*\_crash\_details.csv} -- Detailed crash statistics (episode, final state, velocity, altitude, position)
+    \item \textbf{Evidence}: \texttt{src/scripts/error\_analysis.py} entire file -- Error analysis script implementation
 \end{itemize}
 
 \subsubsection*{checkbox64: Compared multiple model architectures or approaches quantitatively (5 pts)}
 \begin{itemize}
-    \item \textbf{Evidence}: \texttt{src/evaluation/compare\_agents.py} entire file -- Agent comparison framework
-    \item \textbf{Evidence}: \texttt{src/scripts/run\_all\_experiments.py} lines 124-140 -- Comparison of DQN (Adam), DQN (RMSprop), and A2C
-    \item \textbf{Evidence}: \texttt{src/evaluation/compare\_agents.py} lines 40-75 -- Quantitative comparison on validation and test sets
-    \item \textbf{Evidence}: \texttt{data/plots/} -- Comparison plots generated (if run)
+    \item \textbf{Evidence}: \texttt{docs/EVALUATION.md} Section 2 "Model Architecture Comparison" -- Quantitative DQN vs A2C comparison
+    \item \textbf{Evidence}: \texttt{docs/EVALUATION.md} -- DQN achieves 100\% success vs A2C's 64\% success, with detailed metrics table
+    \item \textbf{Evidence}: \texttt{results/test\_results.csv} -- Quantitative comparison: DQN (Adam) 373.61 return vs A2C (Adam) 225.93 return
+    \item \textbf{Evidence}: \texttt{data/plots/all\_models\_learning\_curves.png} -- Visual comparison of all architectures and optimizers
+    \item \textbf{Evidence}: \texttt{src/evaluation/compare\_agents.py} entire file -- Agent comparison framework implementation
+    \item \textbf{Evidence}: \texttt{src/scripts/run\_all\_experiments.py} lines 124-140 -- Training scripts for all architectures
 \end{itemize}
 
 \subsubsection*{checkbox67: Conducted ablation study demonstrating impact of at least two design choices with quantitative comparison (5 pts)}
 \begin{itemize}
-    \item \textbf{Evidence}: \texttt{src/scripts/ablation\_study.py} entire file -- Ablation study implementation
-    \item \textbf{Evidence}: \texttt{src/scripts/ablation\_study.py} lines 37-230 -- Ablation study comparing:
-    \begin{enumerate}
-        \item Baseline DQN
-        \item DQN without experience replay
-        \item DQN without target network
-        \item DQN with custom reward shaping
-    \end{enumerate}
-    \item \textbf{Evidence}: \texttt{src/scripts/ablation\_study.py} lines 230-275 -- Quantitative comparison and visualization
-    \item \textbf{Evidence}: \texttt{src/scripts/ablation\_study.py} line 232 -- CSV export of ablation results
+    \item \textbf{Evidence}: \texttt{docs/EVALUATION.md} Section 4 "Ablation Study Results" -- Comprehensive ablation study analysis
+    \item \textbf{Evidence}: \texttt{docs/EVALUATION.md} -- Quantitative comparison of design choices: experience replay, target network, custom reward shaping
+    \item \textbf{Evidence}: \texttt{ablation\_results/ablation\_study\_results.csv} -- Quantitative results: Custom reward shaping validation return -243.68 ± 18.15
+    \item \textbf{Evidence}: \texttt{ablation\_results/plots/} -- Learning curves for all ablation configurations (baseline, no replay, no target, custom reward)
+    \item \textbf{Evidence}: \texttt{src/scripts/ablation\_study.py} entire file -- Ablation study implementation with four configurations
+    \item \textbf{Evidence}: \texttt{docs/EVALUATION.md} -- Discussion of impact: experience replay (sample efficiency), target network (stability), reward shaping (learning signal)
 \end{itemize}
 
 \section{Category 2: Following Directions (Select all that apply)}

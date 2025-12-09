@@ -41,13 +41,21 @@ python src/training/train_dqn.py --episodes 1000 --optimizer rmsprop
 
 **A2C:**
 ```bash
+# With Adam optimizer
 python src/training/train_a2c.py --episodes 1000 --optimizer adam
+
+# With SGD optimizer
+python src/training/train_a2c.py --episodes 1000 --optimizer sgd
 ```
 
 ### Evaluate Trained Agents
 
 ```bash
-python src/scripts/evaluate_agent.py --algorithm dqn --checkpoint models/dqn/dqn_best.pt --num_episodes 50
+# With reward wrapper (recommended - matches training setup)
+python src/scripts/evaluate_agent.py --algorithm dqn --checkpoint models/dqn/dqn_adam_best.pt --num_episodes 50 --use_reward_wrapper
+
+# Without reward wrapper (for comparison)
+python src/scripts/evaluate_agent.py --algorithm dqn --checkpoint models/dqn/dqn_adam_best.pt --num_episodes 50
 ```
 
 ### Visual Testing
@@ -219,6 +227,48 @@ To prevent overfitting and improve generalization, we employ multiple regulariza
 - **Gradient Clipping**: Clips gradients to a maximum norm (default 0.5-1.0), preventing exploding gradients and improving training stability
 
 These techniques work together to ensure the learned policies generalize well to unseen environment configurations, not just the specific seeds used during training.
+
+## Additional Scripts
+
+The project includes several utility scripts for analysis, visualization, and hyperparameter tuning:
+
+### Hyperparameter Sweep Scripts
+
+**`run_dqn_sweep_fast.py`**: Fast hyperparameter sweep for DQN agents
+- Performs grid search over learning rates, discount factors, optimizers, and weight decay
+- Supports fast mode for quicker sweeps (reduced episodes and validation overhead)
+- Optional reduced grid for faster exploration (16 vs 72 combinations)
+- Usage: `python src/scripts/run_dqn_sweep_fast.py --fast --reduced-grid --episodes 300`
+
+**`run_a2c_sweep_fast.py`**: Fast hyperparameter sweep for A2C agents
+- Performs grid search over learning rates, discount factors, entropy coefficients, value coefficients, and optimizers
+- Supports fast mode and reduced grid options similar to DQN sweep
+- Usage: `python src/scripts/run_a2c_sweep_fast.py --fast --reduced-grid --episodes 300`
+
+### Analysis and Visualization Scripts
+
+**`generate_plots.py`**: Regenerate learning curve plots from saved checkpoints
+- Loads trained agents from checkpoint files and generates learning curves
+- Useful for regenerating plots without retraining
+- Usage: `python src/scripts/generate_plots.py`
+
+**`analyze_training.py`**: Analyze training logs and generate statistics
+- Reads CSV training logs and computes statistics (mean, std, min, max returns)
+- Generates learning curves with moving averages
+- Provides detailed analysis of training progress
+- Usage: `python src/scripts/analyze_training.py --log data/logs/dqn_training_log.csv`
+
+**`error_analysis.py`**: Analyze failure cases and agent behavior
+- Identifies when and why agents fail to land successfully
+- Analyzes crash patterns, fuel usage in failure cases, and common failure modes
+- Generates visualizations of failure statistics
+- Usage: `python src/scripts/error_analysis.py --algorithm dqn --checkpoint models/dqn/dqn_best.pt`
+
+**`ablation_study.py`**: Ablation study comparing design choices
+- Compares DQN with and without key components (experience replay, target network, reward shaping)
+- Demonstrates the impact of each component on performance
+- Generates comparison plots and saves results to CSV
+- Usage: `python src/scripts/ablation_study.py`
 
 ## Attribution
 

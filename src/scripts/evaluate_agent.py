@@ -16,9 +16,10 @@ project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(_
 sys.path.insert(0, os.path.join(project_root, "src"))
 
 import gymnasium as gym
+import torch
 from training.trainer import set_seed, create_env_factory
 from environments.reward_wrapper import RocketRewardWrapper
-from utils.config import RewardConfig, TrainingConfig
+from utils.config import RewardConfig, TrainingConfig, OptimizerConfig
 from evaluation.evaluator import compute_landing_metrics, print_evaluation_summary
 
 
@@ -52,11 +53,15 @@ def load_agent(algorithm: str, checkpoint_path: str):
         return agent, "LunarLander-v3"
     
     elif algorithm == "a2c":
+        # Load checkpoint to get optimizer config first
+        checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
+        optimizer_config = checkpoint.get("optimizer_config", OptimizerConfig())
+        
         agent = A2CAgent(
             state_dim=8,
             action_dim=4,
             network_config=NetworkConfig(),
-            optimizer_config=OptimizerConfig(),
+            optimizer_config=optimizer_config,
             device=device
         )
         agent.load(checkpoint_path)
@@ -128,6 +133,75 @@ def main():
     # Print summary
     print()
     print_evaluation_summary(metrics, args.algorithm.upper())
+    
+    # Save results to CSV
+    import pandas as pd
+    import os
+    
+    # Extract optimizer from checkpoint path
+    checkpoint_name = os.path.basename(args.checkpoint)
+    optimizer = None
+    for opt in ["adam", "rmsprop", "sgd"]:
+        if opt in checkpoint_name.lower():
+            optimizer = opt
+            break
+    
+    # Create results directory if it doesn't exist
+    os.makedirs("results", exist_ok=True)
+    
+    # Prepare results row
+    results_row = {
+        "algorithm": args.algorithm,
+        "optimizer": optimizer if optimizer else "unknown",
+        "checkpoint": checkpoint_name,
+        "mean_return": metrics.get("mean_return", 0),
+        "std_return": metrics.get("std_return", 0),
+        "mean_episode_length": metrics.get("mean_episode_length", 0),
+        "std_episode_length": metrics.get("std_episode_length", 0),
+        "success_rate": metrics.get("success_rate", 0) * 100,  # Convert to percentage
+        "crash_rate": metrics.get("crash_rate", 0) * 100,  # Convert to percentage
+        "mean_fuel_usage": metrics.get("mean_fuel_usage", 0),
+        "std_fuel_usage": metrics.get("std_fuel_usage", 0),
+        "min_fuel_usage": metrics.get("min_fuel_usage", 0),
+        "max_fuel_usage": metrics.get("max_fuel_usage", 0),
+        "total_episodes": metrics.get("total_episodes", 0),
+        "use_reward_wrapper": args.use_reward_wrapper
+    }
+    
+    # Load existing results or create new DataFrame
+    results_file = "results/test_results.csv"
+    if os.path.exists(results_file):
+        try:
+            df = pd.read_csv(results_file)
+            # Check if CSV has the new format (with algorithm column)
+            if "algorithm" in df.columns:
+                # Check if this exact checkpoint already exists
+                existing = df[(df["algorithm"] == args.algorithm) & 
+                             (df["checkpoint"] == checkpoint_name) &
+                             (df["use_reward_wrapper"] == args.use_reward_wrapper)]
+                if len(existing) > 0:
+                    # Update existing row
+                    idx = existing.index[0]
+                    for key, value in results_row.items():
+                        df.at[idx, key] = value
+                else:
+                    # Append new row
+                    df = pd.concat([df, pd.DataFrame([results_row])], ignore_index=True)
+            else:
+                # Old format detected - create new DataFrame with new format
+                # (Old data will be preserved in backup if needed, but we start fresh with new format)
+                df = pd.DataFrame([results_row])
+        except Exception as e:
+            # If there's any error reading the file, create new DataFrame
+            print(f"Warning: Could not read existing results file: {e}")
+            df = pd.DataFrame([results_row])
+    else:
+        # Create new DataFrame
+        df = pd.DataFrame([results_row])
+    
+    # Save to CSV
+    df.to_csv(results_file, index=False)
+    print(f"\nResults saved to: {results_file}")
     
     print("="*80)
     print("Evaluation complete!")

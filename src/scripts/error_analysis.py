@@ -28,19 +28,30 @@ import pandas as pd
 def load_agent(algorithm: str, checkpoint_path: str):
     """Load trained agent from checkpoint."""
     import torch
+    from utils.config import OptimizerConfig, NetworkConfig
+    
+    device = get_device()
     
     if algorithm == "dqn":
         agent = DQNAgent(
             state_dim=8,
             action_dim=4,
-            device=get_device()
+            network_config=NetworkConfig(),
+            optimizer_config=OptimizerConfig(),
+            device=device
         )
         agent.load(checkpoint_path)
     elif algorithm == "a2c":
+        # Load checkpoint to get optimizer config first (to match optimizer type)
+        checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
+        optimizer_config = checkpoint.get("optimizer_config", OptimizerConfig())
+        
         agent = A2CAgent(
             state_dim=8,
             action_dim=4,
-            device=get_device()
+            network_config=NetworkConfig(),
+            optimizer_config=optimizer_config,
+            device=device
         )
         agent.load(checkpoint_path)
     else:
@@ -81,7 +92,20 @@ def analyze_failures(agent, env_factory, num_episodes: int = 50):
         max_steps = 1000
         
         while not done and steps < max_steps:
-            action = agent.select_action(state, training=False)
+            # Handle different agent types
+            if hasattr(agent, 'select_action'):
+                # Check if it's DQN (takes training parameter) or A2C (returns tuple)
+                try:
+                    action_result = agent.select_action(state, training=False)
+                    # A2C returns (action, log_prob, value, entropy), DQN returns int
+                    action = action_result[0] if isinstance(action_result, tuple) else action_result
+                except TypeError:
+                    # A2C doesn't accept training parameter
+                    action_result = agent.select_action(state)
+                    action = action_result[0] if isinstance(action_result, tuple) else action_result
+            else:
+                raise ValueError("Agent does not have select_action method")
+            
             next_state, reward, terminated, truncated, info = env.step(action)
             
             episode_states.append(next_state.copy())
@@ -213,7 +237,7 @@ def visualize_error_analysis(analysis_results, agent_name: str, save_dir: str = 
     plt.close()
 
 
-def run_error_analysis(algorithm: str, checkpoint_path: str, num_episodes: int = 50):
+def run_error_analysis(algorithm: str, checkpoint_path: str, num_episodes: int = 50, use_reward_wrapper: bool = True):
     """Run error analysis for a trained agent."""
     
     print(f"\n{'='*80}")
@@ -222,11 +246,22 @@ def run_error_analysis(algorithm: str, checkpoint_path: str, num_episodes: int =
     
     # Load agent
     agent = load_agent(algorithm, checkpoint_path)
-    agent.eval()
+    # Set networks to evaluation mode (disables dropout, batch norm updates, etc.)
+    if hasattr(agent, 'q_network'):
+        agent.q_network.eval()
+    if hasattr(agent, 'target_network'):
+        agent.target_network.eval()
+    if hasattr(agent, 'policy_network'):
+        agent.policy_network.eval()
+    if hasattr(agent, 'value_network'):
+        agent.value_network.eval()
     
     # Create environment factory
+    reward_config = RewardConfig() if use_reward_wrapper else None
     def env_factory(seed):
         env = gym.make("LunarLander-v3")
+        if use_reward_wrapper and reward_config:
+            env = RocketRewardWrapper(env, reward_config)
         set_seed(seed)
         return env
     
@@ -250,8 +285,21 @@ def run_error_analysis(algorithm: str, checkpoint_path: str, num_episodes: int =
         print(f"  Average crash altitude: {avg_crash_altitude:.2f}")
         print(f"  Average crash X position: {np.mean([c['final_x'] for c in crashes]):.2f}")
     
+    # Extract optimizer from checkpoint path (e.g., "dqn_adam_best.pt" -> "adam")
+    checkpoint_name = os.path.basename(checkpoint_path)
+    optimizer = None
+    for opt in ["adam", "rmsprop", "sgd"]:
+        if opt in checkpoint_name.lower():
+            optimizer = opt
+            break
+    
+    # Create agent name with optimizer
+    if optimizer:
+        agent_name = f"{algorithm}_{optimizer}"
+    else:
+        agent_name = algorithm
+    
     # Create visualizations
-    agent_name = f"{algorithm}_error_analysis"
     visualize_error_analysis(analysis, agent_name)
     
     # Save detailed results
@@ -259,8 +307,9 @@ def run_error_analysis(algorithm: str, checkpoint_path: str, num_episodes: int =
     
     if analysis["failure_cases"]["crashes"]:
         crash_df = pd.DataFrame(analysis["failure_cases"]["crashes"])
-        crash_df.to_csv(f"error_analysis/{algorithm}_crash_details.csv", index=False)
-        print(f"\nCrash details saved to: error_analysis/{algorithm}_crash_details.csv")
+        crash_filename = f"{agent_name}_crash_details.csv"
+        crash_df.to_csv(f"error_analysis/{crash_filename}", index=False)
+        print(f"\nCrash details saved to: error_analysis/{crash_filename}")
     
     return analysis
 
@@ -272,10 +321,12 @@ if __name__ == "__main__":
     parser.add_argument("--algorithm", type=str, required=True, choices=["dqn", "a2c"])
     parser.add_argument("--checkpoint", type=str, required=True, help="Path to checkpoint file")
     parser.add_argument("--num_episodes", type=int, default=50, help="Number of episodes to analyze")
+    parser.add_argument("--use_reward_wrapper", action="store_true", default=True, help="Use reward wrapper (default: True)")
+    parser.add_argument("--no_reward_wrapper", dest="use_reward_wrapper", action="store_false", help="Disable reward wrapper")
     
     args = parser.parse_args()
     
     set_seed(42)
-    analysis = run_error_analysis(args.algorithm, args.checkpoint, args.num_episodes)
+    analysis = run_error_analysis(args.algorithm, args.checkpoint, args.num_episodes, args.use_reward_wrapper)
     print("\nError analysis complete!")
 
